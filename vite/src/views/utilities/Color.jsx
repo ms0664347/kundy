@@ -127,7 +127,7 @@ export default function UIColor() {
           </SubCard>
         </Grid>
         <Grid size={12}>
-          <SubCard title="Success Color">
+          <SubCard title="Success Color111">
             <Grid container spacing={gridSpacing}>
               <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
                 <ColorBox
