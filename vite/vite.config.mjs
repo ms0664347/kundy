@@ -5,8 +5,9 @@ import jsconfigPaths from 'vite-jsconfig-paths';
 export default defineConfig(({ mode }) => {
   // depending on your application, base can also be "/"
   const env = loadEnv(mode, process.cwd(), '');
-  const API_URL = `${env.VITE_APP_BASE_NAME}`;
+  const API_URL = mode === 'production' ? './' : `${env.VITE_APP_BASE_NAME || '/'}`;
   const PORT = 3000;
+  const isProduction = mode === 'production';
 
   return {
     server: {
@@ -44,7 +45,7 @@ export default defineConfig(({ mode }) => {
         '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
       }
     },
-    base: API_URL,
+    base: isProduction ? './' : '/',
     plugins: [react(), jsconfigPaths()]
   };
 });
