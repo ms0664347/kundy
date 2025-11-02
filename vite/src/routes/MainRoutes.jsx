@@ -8,8 +8,10 @@ import Loadable from 'ui-component/Loadable';
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // utilities routing
-const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')));
-const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
+const UtilsDailyWorkReport = Loadable(lazy(() => import('views/utilities/DailyWorkReport')));
+const UtilsAllWorkReport = Loadable(lazy(() => import('views/utilities/AllWorkReport')));
+const UtilsCompany = Loadable(lazy(() => import('views/utilities/Company')));
+const UtilsTool = Loadable(lazy(() => import('views/utilities/Tool')));
 const UtilsShadow = Loadable(lazy(() => import('views/utilities/Shadow')));
 
 // sample page routing
@@ -35,16 +37,20 @@ const MainRoutes = {
       ]
     },
     {
-      path: 'typography',
-      element: <UtilsTypography />
+      path: 'dailyWorkReport',
+      element: <UtilsDailyWorkReport />
     },
     {
-      path: 'color',
-      element: <UtilsColor />
+      path: 'allWorkReport',
+      element: <UtilsAllWorkReport />
     },
     {
-      path: 'shadow',
-      element: <UtilsShadow />
+      path: 'company',
+      element: <UtilsCompany />
+    },
+    {
+      path: 'tool',
+      element: <UtilsTool />
     },
     {
       path: '/sample-page',
