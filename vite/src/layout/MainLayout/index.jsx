@@ -60,10 +60,9 @@ export default function MainLayout() {
           {/* breadcrumb */}
           <Breadcrumbs />
           <Outlet />
-          <Footer />
         </Box>
       </MainContentStyled>
-      <Customization />
+      {/* <Customization /> */}
     </Box>
   );
 }

@@ -1,26 +1,75 @@
 // material-ui
 import Grid from '@mui/material/Grid2';
 import {
-    Typography,
-    Box,
-    Select,
-    MenuItem,
-    TextField,
-    Button,
-    FormControl,
-    InputLabel
+    Typography, Box, Select, MenuItem, TextField, Button,
+    FormControl, InputLabel, Dialog, DialogTitle, DialogContent
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
-import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { readTextFile, writeTextFile, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
 import Swal from 'sweetalert2';
 import WorkReportTable from '../../ui-component/workReport/WorkReportTable';
 import dayjs from 'dayjs';
+import WorkReportForm from '../../ui-component/workReport/WorkReportForm';
 
 export default function AllWorkReport() {
     const [loadedData, setLoadedData] = useState([]);
     const [allData, setAllData] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
+    const [editForm, setEditForm] = useState(null);
+
+
+    // ✅ 點擊「編輯」按鈕
+    const handleEdit = (item) => {
+        setEditingItem(item);
+        setEditForm({
+            company: item.company || '',
+            tool: item.tool || '',
+            location: item.location || '',
+            amount: item.amount || '',
+            overtimePay: item.overtimePay || '',
+            tax: item.tax || 5,
+            note: item.note || '',
+            date: dayjs(item.date, 'YYYY/MM/DD'),
+            pkno: item.pkno,
+        });
+        setOpenModal(true);
+    };
+
+    const handleModalClose = () => {
+        setOpenModal(false);
+        // 延遲清空資料（避免動畫期間內容變空白）
+        setTimeout(() => {
+            setEditingItem(null);
+            setEditForm(null);
+        }, 300); // MUI Dialog 預設 transitionDuration 約 200ms
+    };
+
+
+    // ✅ 更新資料
+    const handleSaveEdit = async (updatedRecord) => {
+        try {
+            const content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            const jsonData = JSON.parse(content);
+            updatedRecord.date = updatedRecord.date ? updatedRecord.date.format('YYYY/MM/DD') : '';
+            const newList = jsonData.map((item) =>
+                item.pkno === updatedRecord.pkno ? { ...updatedRecord } : item
+            );
+
+            await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
+            showAlert('success', '更新成功', `✅ ${updatedRecord.date} 的工作日誌已更新！`);
+
+            const refreshedData = await handleLoadAll();
+            handleSearch(refreshedData);
+            handleModalClose();
+
+        } catch (err) {
+            console.error('❌ 更新失敗:', err);
+            showAlert('error', '更新失敗', '請聯絡阿廷或阿夆工程師');
+        }
+    };
 
     // 🔍 篩選條件
     const [filters, setFilters] = useState({
@@ -33,7 +82,7 @@ export default function AllWorkReport() {
     });
 
     const dirName = 'data';
-    const fileName = `${ dirName }/DailyWorkReport.json`;
+    const fileName = `${dirName}/DailyWorkReport.json`;
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -44,10 +93,28 @@ export default function AllWorkReport() {
         });
     };
 
+    // ✅ 重置篩選條件
+    const handleReset = () => {
+        setFilters({ year: '', month: '', company: '', tool: '', location: '', keyword: '' });
+        setLoadedData(allData);
+    };
+
+    // ✅ 年份選項（從資料動態生成）
+    const uniqueYears = Array.from(
+        new Set(allData.map((item) => item.date?.split('/')[0]).filter(Boolean))
+    ).sort((a, b) => b - a);
+
+    // ✅ 月份選項（1~12固定）
+    const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+
+    // ✅ 讀取公司與工具
+    const companyStore = useJsonStore('company.json');
+    const toolStore = useJsonStore('tool.json');
+
     /** ✅ 共用 JSON 檔案讀取 Hook */
     function useJsonStore(fileName) {
         const [items, setItems] = useState([]);
-        const filePath = `${ dirName }/${ fileName }`;
+        const filePath = `${dirName}/${fileName}`;
 
         const load = async () => {
             try {
@@ -66,23 +133,44 @@ export default function AllWorkReport() {
         return { items };
     }
 
-    // ✅ 讀取公司與工具
-    const companyStore = useJsonStore('company.json');
-    const toolStore = useJsonStore('tool.json');
-
     // ✅ 讀取所有 DailyWorkReport
     const handleLoadAll = async () => {
         try {
-            const content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            // 🔹 確保資料夾存在
+            await mkdir(dirName, { baseDir: BaseDirectory.AppData, recursive: true });
+
+            let content = '';
+
+            try {
+                // 嘗試讀取檔案
+                content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            } catch (err) {
+                // 🔹 有些系統 err 不是 JS Error，要強制轉字串來分析
+                const msg = String(err).toLowerCase();
+                if (
+                    msg.includes('file not found') ||
+                    msg.includes('no such file') ||
+                    msg.includes('failed to open file') ||
+                    msg.includes('os error 2')
+                ) {
+                    console.warn('📁 DailyWorkReport.json 不存在，正在建立空檔案...');
+                    await writeTextFile(fileName, '[]', { baseDir: BaseDirectory.AppData });
+                    content = '[]';
+                } else {
+                    throw err;
+                }
+            }
+
+            // 🔹 若內容空白 → 不載入資料
             if (!content || content.trim() === '') {
                 setLoadedData([]);
-                return;
+                return [];
             }
 
             const jsonData = JSON.parse(content);
-            if (!jsonData || jsonData.length === 0) {
+            if (!Array.isArray(jsonData) || jsonData.length === 0) {
                 setLoadedData([]);
-                return;
+                return [];
             }
 
             // ✅ 日期由新到舊排序
@@ -90,78 +178,103 @@ export default function AllWorkReport() {
 
             setAllData(sortedData);
             setLoadedData(sortedData);
+
+            return sortedData; // ✅ 關鍵：回傳最新資料
+
         } catch (err) {
-            if (err.message?.includes('File not found')) {
-                setLoadedData([]);
-                return;
-            }
             console.error('❌ 讀取失敗:', err);
             showAlert('warning', '發生錯誤', '請聯絡阿廷或阿夆工程師');
         }
     };
 
-    useEffect(() => {
-        handleLoadAll();
-    }, []);
+    // ✅ 刪除指定 pkno 的資料
+    const handleDelete = async (pkno) => {
+        try {
+            const result = await Swal.fire({
+                title: '確定要刪除這筆資料嗎？',
+                text: '刪除後無法復原！',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '是的，刪除！',
+                cancelButtonText: '取消'
+            });
 
-    // ✅ 此頁僅檢視
-    const handleDelete = async () => {
-        Swal.fire({
-            title: '目前此頁僅供檢視',
-            text: '刪除請回「本月工作日誌管理」頁面進行操作。',
-            icon: 'info',
-            confirmButtonColor: '#3085d6'
-        });
-    };
+            // ✅ 使用者按「取消」就直接 return
+            if (!result.isConfirmed) {
+                return;
+            }
 
-    // ✅ 搜尋
-    const handleSearch = () => {
-        let filtered = [...allData];
+            // ✅ 確定後才執行刪除邏輯
+            const content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            const jsonData = JSON.parse(content);
+            const newList = jsonData.filter(item => item.pkno !== pkno);
 
-        // 年月篩選
-        if (filters.year) {
-            filtered = filtered.filter((item) => item.date?.startsWith(filters.year));
-        }
-        if (filters.month) {
-            filtered = filtered.filter((item) => {
-                const [y, m] = item.date?.split('/') || [];
-                return m === filters.month;
+            await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
+
+            await Swal.fire({
+                icon: 'success',
+                title: '刪除成功',
+                text: '🗑️ 該筆資料已被刪除！',
+                confirmButtonColor: '#3085d6',
+            });
+
+            const refreshedData = await handleLoadAll();
+            handleSearch(refreshedData);
+
+        } catch (err) {
+            console.error('❌ 刪除失敗:', err);
+            Swal.fire({
+                icon: 'error',
+                title: '刪除失敗',
+                text: '發生錯誤，請聯絡阿廷或阿夆工程師！',
+                confirmButtonColor: '#3085d6',
             });
         }
+    };
 
-        if (filters.company) filtered = filtered.filter((item) => item.company === filters.company);
-        if (filters.tool) filtered = filtered.filter((item) => item.tool === filters.tool);
-        if (filters.location)
-            filtered = filtered.filter((item) => item.location === filters.location);
+    // ✅ 搜尋（可傳入 data）
+    const handleSearch = (data) => {
+        const baseData = Array.isArray(data) ? data : allData;
+        let filtered = [...baseData];
 
-        if (filters.keyword) {
-            const kw = filters.keyword.toLowerCase();
-            const toText = (v) => (Array.isArray(v) ? v.join(', ') : (v ?? ''));
-            filtered = filtered.filter(
-                (item) =>
-                    toText(item.note).toLowerCase().includes(kw) ||
-                    toText(item.company).toLowerCase().includes(kw) ||
-                    toText(item.tool).toLowerCase().includes(kw) ||
-                    toText(item.location).toLowerCase().includes(kw)
+        const { year, month, company, tool, location, keyword } = filters;
+        const toText = (v) => (Array.isArray(v) ? v.join(', ') : v ? String(v) : '');
+
+        if (year)
+            filtered = filtered.filter((item) => item.date?.startsWith(year));
+        if (month)
+            filtered = filtered.filter((item) => item.date?.split('/')[1] === month);
+        if (company)
+            filtered = filtered.filter((item) => item.company === company);
+        if (tool)
+            filtered = filtered.filter((item) => item.tool === tool);
+
+        if (location) {
+            const kw = location.toLowerCase();
+            filtered = filtered.filter((item) =>
+                [item.note, item.company, item.tool, item.location]
+                    .filter(Boolean)
+                    .some((v) => v.toLowerCase().includes(kw))
+            );
+        }
+
+        if (keyword) {
+            const kw = keyword.toLowerCase();
+            filtered = filtered.filter((item) =>
+                [item.note, item.company, item.tool, item.location]
+                    .filter(Boolean)
+                    .some((v) => v.toLowerCase().includes(kw))
             );
         }
 
         setLoadedData(filtered);
     };
 
-    // ✅ 重置篩選條件
-    const handleReset = () => {
-        setFilters({ year: '', month: '', company: '', tool: '', location: '', keyword: '' });
-        setLoadedData(allData);
-    };
-
-    // ✅ 年份選項（從資料動態生成）
-    const uniqueYears = Array.from(
-        new Set(allData.map((item) => item.date?.split('/')[0]).filter(Boolean))
-    ).sort((a, b) => b - a);
-
-    // ✅ 月份選項（1~12固定）
-    const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+    useEffect(() => {
+        handleLoadAll();
+    }, []);
 
     return (
         <MainCard
@@ -259,23 +372,13 @@ export default function AllWorkReport() {
                 </FormControl>
 
                 {/* 地點 */}
-                <FormControl sx={{ minWidth: 150 }}>
-                    <InputLabel>地點</InputLabel>
-                    <Select
-                        value={filters.location}
-                        label="地點"
-                        onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                    >
-                        <MenuItem value="">全部</MenuItem>
-                        {Array.from(new Set(allData.map((i) => i.location).filter(Boolean))).map(
-                            (loc, index) => (
-                                <MenuItem key={index} value={loc}>
-                                    {loc}
-                                </MenuItem>
-                            )
-                        )}
-                    </Select>
-                </FormControl>
+                <TextField
+                    label="地點"
+                    variant="outlined"
+                    value={filters.location}
+                    onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                    sx={{ minWidth: 200 }}
+                />
 
                 {/* 關鍵字 */}
                 <TextField
@@ -288,36 +391,100 @@ export default function AllWorkReport() {
 
                 {/* 搜尋按鈕 */}
                 <Button
+                    id="searchButton"
                     variant="contained"
-                    color="primary"
-                    sx={{ height: '56px' }}
+                    sx={{
+                        height: '38px',
+                        width: '100px',
+                        px: 2.5,
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        color: '#fff',                  // ✅ 白字
+                        backgroundColor: '#4d7ae2ff',     // ✅ 主色
+                        borderColor: '#4171e2',
+                        boxShadow: 'none',
+                        '&:hover': {
+                            backgroundColor: '#3358d4',   // ✅ hover 顏色更深
+                            boxShadow: '0 0 6px rgba(65,113,226,0.4)', // ✅ 微光暈效果
+                        },
+                    }}
                     onClick={handleSearch}
                 >
                     🔍 搜尋
                 </Button>
 
-                {/* 重置按鈕 */}
                 <Button
                     variant="outlined"
-                    color="secondary"
-                    sx={{ height: '56px' }}
+                    color="error"
+                    sx={{
+                        height: '38px',
+                        width: '100px',
+                        px: 2.5,
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        color: '#d32f2f', // 🔹 直接指定文字顏色
+                        borderColor: '#d32f2f', // 🔹 外框顏色同步
+                        '&:hover': {
+                            backgroundColor: '#e17a67ff',
+                            color: '#fff', // 🔹 hover 時變白字
+                            borderColor: '#e17a67ff',
+                        },
+                    }}
                     onClick={handleReset}
                 >
-                    ♻️ 重置
+                    🗑️ 清除
                 </Button>
+
             </Box>
 
             {/* 📋 表格 */}
-            <Grid container spacing={gridSpacing}>
-                <Grid size={{ xs: 12 }}>
+            <Box
+                sx={{
+                    overflowX: 'auto',
+                    width: '100%',
+                    maxWidth: '100%',
+                    display: 'block',
+                    borderRadius: '8px',
+                }}
+            >
+                <Box sx={{ minWidth: '1200px' }}> {/* 👈 強制表格寬度超過容器 */}
                     <WorkReportTable
                         title=""
                         loadedData={loadedData || []}
-                        onEdit={() => { }}
-                        onDelete={handleDelete}
+                        onEdit={(item) => handleEdit(item)}
+                        onDelete={(item) => handleDelete(item.pkno)}
                     />
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
+
+            {/* ✏️ 編輯用 Modal */}
+            <Dialog open={openModal} onClose={handleModalClose} fullWidth maxWidth="sm">
+                <DialogContent>
+                    {editForm && (
+                        <WorkReportForm
+                            record={{
+                                location: editForm.location,
+                                amount: editForm.amount,
+                                overtimePay: editForm.overtimePay,
+                                tax: editForm.tax,
+                                note: editForm.note,
+                            }}
+                            setRecord={(newData) => setEditForm({ ...editForm, ...newData })}
+                            selectedCompany={editForm.company}
+                            setSelectedCompany={(val) => setEditForm({ ...editForm, company: val })}
+                            selectedTool={editForm.tool}
+                            setSelectedTool={(val) => setEditForm({ ...editForm, tool: val })}
+                            date={dayjs(editForm.date)}   // ← 確保永遠轉成 dayjs 物件
+                            setDate={(val) => setEditForm({ ...editForm, date: val })}
+                            companyStore={companyStore}
+                            toolStore={toolStore}
+                            isEditing={true}
+                            onSave={() => handleSaveEdit(editForm)}
+                            onCancelEdit={handleModalClose}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </MainCard>
     );
 }

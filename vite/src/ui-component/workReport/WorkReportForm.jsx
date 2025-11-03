@@ -87,12 +87,16 @@ export default function WorkReportForm({
                 <Button variant="contained" color="primary" onClick={onSave}
                     sx={{
                         width: '40%',
-                        backgroundColor: '#4171e2ff',
+                        backgroundColor: '#4d78ddff',     // ✅ 主色
+                        borderColor: '#4171e2',
                         margin: '10px auto',
                         color: '#fff',
                         textTransform: 'none',
                         borderRadius: 2,
-                        '&:hover': { backgroundColor: '#1c27f9ff' },
+                        '&:hover': {
+                            backgroundColor: '#3358d4',   // ✅ hover 顏色更深
+                            boxShadow: '0 0 6px rgba(65,113,226,0.4)', // ✅ 微光暈效果
+                        },
                     }}>{isEditing ? '🔄 更新' : '💾 儲存'}
                 </Button>
 
@@ -103,7 +107,13 @@ export default function WorkReportForm({
                             margin: '10px auto',
                             textTransform: 'none',
                             borderRadius: 2,
-                            '&:hover': { backgroundColor: '#e12e0eff' },
+                            color: '#d32f2f', // 🔹 直接指定文字顏色
+                            borderColor: '#d32f2f', // 🔹 外框顏色同步
+                            '&:hover': {
+                                backgroundColor: '#e17a67ff',
+                                color: '#fff', // 🔹 hover 時變白字
+                                borderColor: '#e17a67ff',
+                            },
                         }}
                     >
                         取消編輯

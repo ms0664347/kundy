@@ -120,6 +120,7 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                     >
                         <TableHead>
                             <TableRow>
+                                <TableCell>-</TableCell>
                                 <TableCell>📅 日期</TableCell>
                                 <TableCell>🏢 公司</TableCell>
                                 <TableCell>🛠 工具</TableCell>
@@ -144,6 +145,7 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
 
                                 return (
                                     <TableRow key={item.pkno || index}>
+                                        <TableCell>-</TableCell>
                                         <TableCell>{item.date || '—'}</TableCell>
                                         <TableCell>{item.company || '—'}</TableCell>
                                         <TableCell>{item.tool || '—'}</TableCell>
@@ -166,24 +168,48 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                                         </TableCell>
                                         <TableCell>
                                             <Stack direction="row" spacing={1} justifyContent="center">
+                                                {/* 編輯按鈕 */}
                                                 <Button
                                                     size="small"
-                                                    variant="outlined"
-                                                    color="primary"
+                                                    variant="contained"
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        color: '#fff',
+                                                        backgroundColor: '#507ce4ff',
+                                                        borderColor: '#4171e2',
+                                                        boxShadow: 'none',
+                                                        '&:hover': {
+                                                            backgroundColor: '#3358d4',
+                                                            boxShadow: '0 0 6px rgba(65,113,226,0.4)',
+                                                        },
+                                                    }}
                                                     onClick={() => onEdit(item)}
                                                 >
                                                     ✏️ 編輯
                                                 </Button>
+
+                                                {/* 刪除按鈕 */}
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
-                                                    color="error"
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        color: '#d32f2f',
+                                                        borderColor: '#d32f2f',
+                                                        '&:hover': {
+                                                            backgroundColor: '#e17a67',
+                                                            color: '#fff',
+                                                            borderColor: '#e17a67',
+                                                            boxShadow: '0 0 6px rgba(225,122,103,0.4)',
+                                                        },
+                                                    }}
                                                     onClick={() => onDelete(item)}
                                                 >
                                                     🗑️ 刪除
                                                 </Button>
                                             </Stack>
                                         </TableCell>
+
                                     </TableRow>
                                 );
                             })}
@@ -198,7 +224,7 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                                 >
                                     <TableCell sx={{ fontWeight: 'bold' }}>📊 合計</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold' }}>{summary.days} 天</TableCell>
-                                    <TableCell colSpan={3}>—</TableCell>
+                                    <TableCell colSpan={4}>—</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold' }}>
                                         {summary.totalAmount.toLocaleString()}
                                     </TableCell>

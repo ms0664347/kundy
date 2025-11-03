@@ -61,12 +61,12 @@ function MenuList() {
             lastItemId={lastItemId}
           />
         );
-      default:
-        return (
-          <Typography key={item.id} variant="h6" color="error" align="center">
-            Menu Items Error
-          </Typography>
-        );
+      // default:
+      //   return (
+      //     <Typography key={item.id} variant="h6" color="error" align="center">
+      //       Menu Items Error
+      //     </Typography>
+      //   );
     }
   });
 

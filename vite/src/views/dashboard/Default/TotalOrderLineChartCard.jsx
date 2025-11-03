@@ -141,7 +141,7 @@ export default function TotalOrderLineChartCard({ isLoading }) {
                             color: 'primary.200'
                           }}
                         >
-                          Total Order
+                          Total Order0000
                         </Typography>
                       </Grid>
                     </Grid>

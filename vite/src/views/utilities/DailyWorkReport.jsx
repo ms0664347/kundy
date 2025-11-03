@@ -1,6 +1,6 @@
 // material-ui
 import Grid from '@mui/material/Grid2';
-import { Typography } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
@@ -32,7 +32,7 @@ export default function DailyWorkReport() {
     const [isEditing, setIsEditing] = useState(false); // ✅ 新增：是否為編輯模式
 
     const dirName = 'data';
-    const fileName = `${ dirName }/DailyWorkReport.json`;
+    const fileName = `${dirName}/DailyWorkReport.json`;
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -46,7 +46,7 @@ export default function DailyWorkReport() {
     // JSON 檔案通用讀取
     function useJsonStore(fileName) {
         const [items, setItems] = useState([]);
-        const filePath = `${ dirName }/${ fileName }`;
+        const filePath = `${dirName}/${fileName}`;
 
         const load = async () => {
             try {
@@ -124,15 +124,38 @@ export default function DailyWorkReport() {
             await handleLoad();
         } catch (err) {
             console.error('❌ 寫入失敗:', err);
-            showAlert('error', '寫入失敗', '請聯絡工程師');
+            showAlert('error', '寫入失敗', '請聯絡阿廷或阿夆工程師');
         }
     };
 
     // ✅ 讀取本月資料
     const handleLoad = async () => {
         try {
+            // 🔹 確保資料夾存在
+            await mkdir(dirName, { baseDir: BaseDirectory.AppData, recursive: true });
 
-            const content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            let content = '';
+
+            try {
+                // 🔹 嘗試讀取檔案
+                content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            } catch (err) {
+                // 🔹 捕捉多種情況（Windows / macOS / Linux）
+                const msg = String(err).toLowerCase();
+                if (
+                    msg.includes('file not found') ||
+                    msg.includes('no such file') ||
+                    msg.includes('failed to open file') ||
+                    msg.includes('os error 2')
+                ) {
+                    // ✅ 檔案不存在 → 自動建立空 JSON 檔案
+                    console.warn('📁 DailyWorkReport.json 不存在，正在建立空檔案...');
+                    await writeTextFile(fileName, '[]', { baseDir: BaseDirectory.AppData });
+                    content = '[]';
+                } else {
+                    throw err; // 其他錯誤往外拋
+                }
+            }
 
             if (!content || content.trim() === '') {
                 setLoadedData([]);
@@ -140,36 +163,31 @@ export default function DailyWorkReport() {
             }
 
             const jsonData = JSON.parse(content);
-            if (!jsonData || jsonData.length === 0) {
+            if (!Array.isArray(jsonData) || jsonData.length === 0) {
                 setLoadedData([]);
                 return;
             }
 
-            // ✅ 過濾邏輯：若指定只看本月，並按照日期由新到舊排序
+            // ✅ 篩選本月資料（降冪排序）
             const now = dayjs();
             const currentMonth = now.format('YYYY/MM');
 
-            let filteredData = jsonData
-                .filter(item =>
-                    item.date && item.date.startsWith(currentMonth)
-                )
+            const filteredData = jsonData
+                .filter((item) => item.date && item.date.startsWith(currentMonth))
                 .sort((a, b) => {
                     const dateA = dayjs(a.date, 'YYYY/MM/DD');
                     const dateB = dayjs(b.date, 'YYYY/MM/DD');
-                    return dateB.diff(dateA); // 降冪：最新的在最上面
+                    return dateB.diff(dateA);
                 });
 
             setLoadedData(filteredData);
-
         } catch (err) {
-            if (err.message?.includes('File not found')) {
-                setLoadedData([]);
-                return;
-            }
             console.error('❌ 讀取失敗:', err);
             showAlert('warning', '發生錯誤', '請聯絡阿廷或阿夆工程師');
         }
     };
+
+
 
     // ✅ 刪除指定 pkno 的資料
     const handleDelete = async (pkno) => {
@@ -282,14 +300,25 @@ export default function DailyWorkReport() {
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12 }}>
-                    <WorkReportTable
-                        title="本月工作日誌列表"
-                        loadedData={loadedData}
-                        onEdit={(item) => handleEdit(item)}   // ✅ 傳 item 給 handleEdit
-                        onDelete={(item) => handleDelete(item.pkno)}
-                    />
-                </Grid>
+                <Box
+                    sx={{
+                        overflowX: 'auto',
+                        width: '100%',
+                        maxWidth: '100%',
+                        display: 'block',
+                        borderRadius: '8px',
+                    }}
+                >
+                    <Box sx={{ minWidth: '1050px' }}> {/* 👈 強制表格寬度超過容器 */}
+                        <WorkReportTable
+                            title="本月工作日誌列表"
+                            loadedData={loadedData}
+                            onEdit={(item) => handleEdit(item)}
+                            onDelete={(item) => handleDelete(item.pkno)}
+                        />
+                    </Box>
+                </Box>
+
             </Grid>
         </MainCard>
     );

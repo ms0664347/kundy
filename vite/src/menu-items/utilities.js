@@ -1,5 +1,6 @@
 // assets
 import { IconTypography, IconPalette, IconShadow, IconWindmill, IconReport, IconTool, IconBuilding } from '@tabler/icons-react';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 
 // constant
 const icons = {
@@ -16,20 +17,20 @@ const icons = {
 
 const utilities = {
   id: 'utilities',
-  title: 'Utilities',
+  title: '功能頁面',
   type: 'group',
   children: [
     {
       id: 'util-dailyWorkReport',
-      title: 'DailyWorkReport',
+      title: '每日工作紀錄',
       type: 'item',
       url: '/dailyWorkReport',
-      icon: icons.IconReport,
+      icon: BorderColorIcon,
       breadcrumbs: false
     },
     {
       id: 'util-allWorkReport',
-      title: 'AllWorkReport',
+      title: '所有紀錄報表',
       type: 'item',
       url: '/allWorkReport',
       icon: icons.IconReport,
@@ -37,7 +38,7 @@ const utilities = {
     },
     {
       id: 'util-company',
-      title: 'Company',
+      title: '公司設定',
       type: 'item',
       url: '/company',
       icon: icons.IconBuilding,
@@ -45,7 +46,7 @@ const utilities = {
     },
     {
       id: 'util-tool',
-      title: 'Tool',
+      title: '工具設定',
       type: 'item',
       url: '/tool',
       icon: icons.IconTool,
