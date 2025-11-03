@@ -56,12 +56,12 @@ export default function Dashboard() {
       </Grid>
       <Grid size={12}>
         <Grid container spacing={gridSpacing}>
-          <Grid size={{ xs: 12, md: 8 }}>
+          <Grid size={{ xs: 12 }}>
             <TotalGrowthBarChart isLoading={isLoading} />
           </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
+          {/* <Grid size={{ xs: 12, md: 4 }}>
             <PopularCard isLoading={isLoading} />
-          </Grid>
+          </Grid> */}
         </Grid>
       </Grid>
     </Grid>

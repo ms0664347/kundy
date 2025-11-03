@@ -60,10 +60,20 @@ function Sidebar() {
             {drawerOpen && drawerContent}
           </Box>
         ) : (
-          <PerfectScrollbar style={{ height: 'calc(100vh - 88px)', ...drawerSX }}>
+          <Box
+            sx={{
+              height: 'calc(100vh - 88px)',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              scrollbarGutter: 'stable',
+              '&::-webkit-scrollbar': { display: 'none' }, // 完全隱藏
+              ...drawerSX
+            }}
+          >
             <MenuList />
             {drawerOpen && drawerContent}
-          </PerfectScrollbar>
+          </Box>
+
         )}
       </>
     );

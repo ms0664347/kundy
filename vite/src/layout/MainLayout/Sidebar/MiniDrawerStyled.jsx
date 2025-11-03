@@ -16,7 +16,9 @@ function openedMixin(theme) {
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen + 200
-    })
+    }),
+    overflowY: 'auto',
+    scrollbarGutter: 'stable'
   };
 }
 
@@ -30,7 +32,9 @@ function closedMixin(theme) {
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen + 200
-    })
+    }),
+    overflowY: 'auto',
+    scrollbarGutter: 'stable'
   };
 }
 
