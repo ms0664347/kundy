@@ -2,170 +2,114 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid2';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-
+import Grid from '@mui/material/Grid2';
+import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import TimelineTwoToneIcon from '@mui/icons-material/TimelineTwoTone';
 // third party
-import Chart from 'react-apexcharts';
 
 // project imports
-import ChartDataMonth from './chart-data/total-order-month-line-chart';
-import ChartDataYear from './chart-data/total-order-year-line-chart';
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
 
 // assets
-import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
-export default function TotalOrderLineChartCard({ isLoading }) {
-  const theme = useTheme();
+export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWorkDays, currentYear }) {
+    const theme = useTheme();
 
-  const [timeValue, setTimeValue] = React.useState(false);
-  const handleChangeTime = (event, newValue) => {
-    setTimeValue(newValue);
-  };
+    const [timeValue, setTimeValue] = React.useState(false);
+    const handleChangeTime = (event, newValue) => {
+        setTimeValue(newValue);
+    };
 
-  return (
-    <>
-      {isLoading ? (
-        <SkeletonTotalOrderCard />
-      ) : (
-        <MainCard
-          border={false}
-          content={false}
-          sx={{
-            bgcolor: 'primary.dark',
-            color: '#fff',
-            overflow: 'hidden',
-            position: 'relative',
-            '&>div': {
-              position: 'relative',
-              zIndex: 5
-            },
-            '&:after': {
-              content: '""',
-              position: 'absolute',
-              width: 210,
-              height: 210,
-              background: theme.palette.primary[800],
-              borderRadius: '50%',
-              top: { xs: -85 },
-              right: { xs: -95 }
-            },
-            '&:before': {
-              content: '""',
-              position: 'absolute',
-              width: 210,
-              height: 210,
-              background: theme.palette.primary[800],
-              borderRadius: '50%',
-              top: { xs: -125 },
-              right: { xs: -15 },
-              opacity: 0.5
-            }
-          }}
-        >
-          <Box sx={{ p: 2.25 }}>
-            <Grid container direction="column">
-              <Grid>
-                <Grid container sx={{ justifyContent: 'space-between' }}>
-                  <Grid>
-                    <Avatar
-                      variant="rounded"
-                      sx={{
-                        ...theme.typography.commonAvatar,
-                        ...theme.typography.largeAvatar,
-                        bgcolor: 'primary.800',
-                        color: '#fff',
-                        mt: 1
-                      }}
-                    >
-                      <LocalMallOutlinedIcon fontSize="inherit" />
-                    </Avatar>
-                  </Grid>
-                  <Grid>
-                    <Button
-                      disableElevation
-                      variant={timeValue ? 'contained' : 'text'}
-                      size="small"
-                      sx={{ color: 'inherit' }}
-                      onClick={(e) => handleChangeTime(e, true)}
-                    >
-                      Month
-                    </Button>
-                    <Button
-                      disableElevation
-                      variant={!timeValue ? 'contained' : 'text'}
-                      size="small"
-                      sx={{ color: 'inherit' }}
-                      onClick={(e) => handleChangeTime(e, false)}
-                    >
-                      Year
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid sx={{ mb: 0.75 }}>
-                <Grid container sx={{ alignItems: 'center' }}>
-                  <Grid size={6}>
-                    <Grid container sx={{ alignItems: 'center' }}>
-                      <Grid>
-                        {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$108</Typography>
-                        ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$961</Typography>
-                        )}
-                      </Grid>
-                      <Grid>
-                        <Avatar
-                          sx={{
-                            ...theme.typography.smallAvatar,
-                            cursor: 'pointer',
-                            bgcolor: 'primary.200',
-                            color: 'primary.dark'
-                          }}
-                        >
-                          <ArrowDownwardIcon fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
-                        </Avatar>
-                      </Grid>
-                      <Grid size={12}>
-                        <Typography
-                          sx={{
-                            fontSize: '1rem',
-                            fontWeight: 500,
-                            color: 'primary.200'
-                          }}
-                        >
-                          Total Order0000
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                  <Grid
-                    size={6}
+    return (
+        <>
+            {isLoading ? (
+                <SkeletonTotalOrderCard />
+            ) : (
+                <MainCard
+                    border={false}
+                    content={false}
                     sx={{
-                      '.apexcharts-tooltip.apexcharts-theme-light': {
-                        color: theme.palette.text.primary,
-                        background: theme.palette.background.default,
-                        ...theme.applyStyles('dark', { border: 'none' })
-                      }
+                        bgcolor: 'primary.dark',
+                        color: '#fff',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        '&>div': {
+                            position: 'relative',
+                            zIndex: 5
+                        },
+                        '&:after': {
+                            content: '""',
+                            position: 'absolute',
+                            width: 210,
+                            height: 210,
+                            background: theme.palette.primary[800],
+                            borderRadius: '50%',
+                            top: { xs: -85 },
+                            right: { xs: -95 }
+                        },
+                        '&:before': {
+                            content: '""',
+                            position: 'absolute',
+                            width: 210,
+                            height: 210,
+                            background: theme.palette.primary[800],
+                            borderRadius: '50%',
+                            top: { xs: -125 },
+                            right: { xs: -15 },
+                            opacity: 0.5
+                        }
                     }}
-                  >
-                    {timeValue ? <Chart {...ChartDataMonth} /> : <Chart {...ChartDataYear} />}
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Box>
-        </MainCard>
-      )}
-    </>
-  );
+                >
+                    <Box sx={{ p: 2.25 }}>
+                        <Grid container direction="column">
+                            <Box mb={2} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <TimelineTwoToneIcon sx={{ color: '#fff', fontSize: '1.6rem' }} />
+                                <Typography sx={{ fontSize: '1.125rem', fontWeight: 500, color: '#fff' }}>
+                                    今年 ({currentYear}年)
+                                </Typography>
+                            </Box>
+                            <Grid>
+                                <Grid
+                                    container
+                                    direction="column" // 👈 改成垂直排列
+                                    sx={{ mt: 1, gap: 0.5 }} // 👈 gap 控制上下間距
+                                >
+                                    {/* 收入金額 */}
+                                    <Grid>
+                                        <Typography
+                                            sx={{
+                                                fontSize: '1.6rem',
+                                                fontWeight: 600,
+                                                color: '#fff'
+                                            }}
+                                        >
+                                            收入：${yearIncome?.toLocaleString() || '0.00'}
+                                        </Typography>
+                                    </Grid>
+
+                                    {/* 工作天數區塊 */}
+                                    <Grid>
+                                        <Typography
+                                            sx={{
+                                                fontSize: '1.4rem',
+                                                color: '#e0e0e0',
+                                                fontWeight: 400
+                                            }}
+                                        >
+                                            ({yearWorkDays}/365天)
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </MainCard>
+            )}
+        </>
+    );
 }
 
 TotalOrderLineChartCard.propTypes = { isLoading: PropTypes.bool };

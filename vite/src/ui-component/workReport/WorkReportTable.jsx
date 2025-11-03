@@ -17,13 +17,15 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
     // ✅ 確保 loadedData 為陣列
     const safeData = Array.isArray(loadedData) ? loadedData : [];
     const [page, setPage] = useState(1);
-    const rowsPerPage = 30;
+    const rowsPerPage = 15;
 
     // ✅ 計算分頁資料
     const startIndex = (page - 1) * rowsPerPage;
     const paginatedData = safeData.slice(startIndex, startIndex + rowsPerPage);
     const totalPages = Math.ceil(safeData.length / rowsPerPage);
 
+
+    const seenDates = new Set();
     // ✅ 合計統計
     const summary =
         safeData.length > 0
@@ -36,7 +38,11 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                     const total = Math.round(subtotal * (1 + taxRate / 100));
                     const taxValue = total - subtotal;
 
-                    acc.days += 1;
+                    // ✅ 只在第一次出現該日期時 +1
+                    if (!seenDates.has(item.date)) {
+                        seenDates.add(item.date);
+                        acc.days += 1;
+                    }
                     acc.totalAmount += amount;
                     acc.totalOvertime += overtimePay;
                     acc.totalTax += taxValue;

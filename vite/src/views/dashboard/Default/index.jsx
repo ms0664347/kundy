@@ -12,58 +12,221 @@ import TotalIncomeLightCard from '../../../ui-component/cards/TotalIncomeLightCa
 import TotalGrowthBarChart from './TotalGrowthBarChart';
 
 import { gridSpacing } from 'store/constant';
-
+import 'dayjs/locale/zh-tw';
+import dayjs from 'dayjs';
+import { mkdir, readTextFile, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 // assets
 import StorefrontTwoToneIcon from '@mui/icons-material/StorefrontTwoTone';
 
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
 export default function Dashboard() {
-  const [isLoading, setLoading] = useState(true);
+    const [isLoading, setLoading] = useState(true);
+    const [date, setDate] = useState(dayjs());
+    const [loadedData, setLoadedData] = useState([]);
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+    // 📊 統計資料
+    const [monthIncome, setMonthIncome] = useState(0);
+    const [yearIncome, setYearIncome] = useState(0);
+    const [topTool, setTopTool] = useState({ name: '', count: 0 });
+    const [topCompany, setTopCompany] = useState({ name: '', total: 0 });
+    const [monthWorkDays, setMonthWorkDays] = useState(0);
+    const [yearWorkDays, setYearWorkDays] = useState(0);
+    const [totalDaysInMonth, setTotalDaysInMonth] = useState(0);
+    const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY/MM'));
+    const [currentYear, setCurrentYear] = useState(dayjs().format('YYYY'));
 
-  return (
-    <Grid container spacing={gridSpacing}>
-      <Grid size={12}>
+
+    const dirName = 'data';
+    const fileName = `${ dirName }/DailyWorkReport.json`;
+
+    const showAlert = (icon, title, text) => {
+        Swal.fire({
+            icon,
+            title,
+            text,
+            confirmButtonColor: '#3085d6',
+        });
+    };
+
+    // ✅ 讀取全部資料
+    const handleLoad = async () => {
+        try {
+            // 🔹 確保資料夾存在
+            await mkdir(dirName, { baseDir: BaseDirectory.AppData, recursive: true });
+
+            let content = '';
+
+            try {
+                // 🔹 嘗試讀取檔案
+                content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            } catch (err) {
+                // 🔹 捕捉多種情況（Windows / macOS / Linux）
+                const msg = String(err).toLowerCase();
+                if (
+                    msg.includes('file not found') ||
+                    msg.includes('no such file') ||
+                    msg.includes('failed to open file') ||
+                    msg.includes('os error 2')
+                ) {
+                    // ✅ 檔案不存在 → 自動建立空 JSON 檔案
+                    console.warn('📁 DailyWorkReport.json 不存在，正在建立空檔案...');
+                    await writeTextFile(fileName, '[]', { baseDir: BaseDirectory.AppData });
+                    content = '[]';
+                } else {
+                    throw err; // 其他錯誤往外拋
+                }
+            }
+
+            if (!content || content.trim() === '') {
+                setLoadedData([]);
+                return;
+            }
+
+            const jsonData = JSON.parse(content);
+            if (!Array.isArray(jsonData) || jsonData.length === 0) {
+                setLoadedData([]);
+                return;
+            }
+
+
+            // ✅ 篩選本月資料（降冪排序）
+            const now = dayjs();
+            const currentMonth = now.format('YYYY/MM');
+            const currentYear = now.format('YYYY');
+
+            const filteredData = jsonData
+                .filter((item) => item.date && item.date.startsWith(currentMonth))
+                .sort((a, b) => {
+                    const dateA = dayjs(a.date, 'YYYY/MM/DD');
+                    const dateB = dayjs(b.date, 'YYYY/MM/DD');
+                    return dateB.diff(dateA);
+                });
+
+            // ✅ 1. 本月總收入（含加班）
+            const monthTotal = filteredData.reduce((sum, item) => {
+                const amount = Number(item.amount) || 0;
+                const overtime = Number(item.overtimePay) || 0;
+                return sum + amount + overtime;
+            }, 0);
+
+            // ✅ 2. 年度總收入（含加班）
+            const yearData = jsonData.filter((item) => item.date && item.date.startsWith(currentYear));
+            const yearTotal = yearData.reduce((sum, item) => {
+                const amount = Number(item.amount) || 0;
+                const overtime = Number(item.overtimePay) || 0;
+                return sum + amount + overtime;
+            }, 0);
+
+            // ✅ 3. 本月最常使用工具
+            const toolCount = {};
+            filteredData.forEach((item) => {
+                const tool = item.tool || '未填寫';
+                toolCount[tool] = (toolCount[tool] || 0) + 1;
+            });
+            const topToolEntry = Object.entries(toolCount).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+
+            // ✅ 4. 今年收入最高的公司
+            const companySum = {};
+            jsonData.forEach((item) => {
+                const company = item.company || '未填寫';
+                const income = (Number(item.amount) || 0) + (Number(item.overtimePay) || 0);
+                companySum[company] = (companySum[company] || 0) + income;
+            });
+            const topCompanyEntry = Object.entries(companySum).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+
+            // ✅ 5. 本月工作天數（以日期不重複計算）
+            const uniqueDays = new Set(filteredData.map(item => item.date)).size;
+
+            // ✅ 6. 本月總天數
+            const totalDaysInMonth = now.daysInMonth(); // ✅ 例如 11 月會是 30
+
+            // ✅ 7. 今年工作天數（僅限今年）
+            const yearWorkDays = new Set(
+                jsonData
+                    .filter((item) => item.date && item.date.startsWith(currentYear))
+                    .map((item) => item.date)
+            ).size;
+
+
+            // ✅ 存入 state
+            setMonthIncome(monthTotal);
+            setYearIncome(yearTotal);
+            setTopTool({ name: topToolEntry[0], count: topToolEntry[1] });
+            setTopCompany({ name: topCompanyEntry[0], total: topCompanyEntry[1] });
+            setMonthWorkDays(uniqueDays); // ✅ 新增
+            setTotalDaysInMonth(totalDaysInMonth);
+            setYearWorkDays(yearWorkDays);
+
+            setLoadedData(jsonData);
+        } catch (err) {
+            console.error('❌ 讀取失敗:', err);
+            showAlert('warning', '發生錯誤', '請聯絡阿廷或阿夆工程師');
+        }
+    };
+
+    useEffect(() => {
+        const now = dayjs();
+        setCurrentMonth(now.format('MM'));
+        setCurrentYear(now.format('YYYY'));
+        handleLoad();
+        setLoading(false);
+    }, []);
+
+    return (
         <Grid container spacing={gridSpacing}>
-          <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
-            <EarningCard isLoading={isLoading} />
-          </Grid>
-          <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
-            <TotalOrderLineChartCard isLoading={isLoading} />
-          </Grid>
-          <Grid size={{ lg: 4, md: 12, sm: 12, xs: 12 }}>
-            <Grid container spacing={gridSpacing}>
-              <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
-                <TotalIncomeDarkCard isLoading={isLoading} />
-              </Grid>
-              <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
-                <TotalIncomeLightCard
-                  {...{
-                    isLoading: isLoading,
-                    total: 203,
-                    label: 'Total Income',
-                    icon: <StorefrontTwoToneIcon fontSize="inherit" />
-                  }}
-                />
-              </Grid>
+            <Grid size={12}>
+                <Grid container spacing={gridSpacing}>
+                    <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
+                        <EarningCard
+                            isLoading={isLoading}
+                            monthIncome={monthIncome}
+                            monthWorkDays={monthWorkDays}
+                            totalDaysInMonth={totalDaysInMonth}
+                            currentMonth={currentMonth}
+                        />
+                    </Grid>
+                    <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
+                        <TotalOrderLineChartCard
+                            isLoading={isLoading}
+                            yearIncome={yearIncome}
+                            yearWorkDays={yearWorkDays}
+                            currentYear={currentYear}
+                        />
+                    </Grid>
+                    <Grid size={{ lg: 4, md: 12, sm: 12, xs: 12 }}>
+                        <Grid container spacing={gridSpacing}>
+                            <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
+                                <TotalIncomeDarkCard
+                                    isLoading={isLoading}
+                                    topTool={topTool}
+                                    currentMonth={currentMonth}
+                                />
+                            </Grid>
+                            <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
+                                <TotalIncomeLightCard
+                                    isLoading={isLoading}
+                                    topCompany={topCompany}
+                                    currentYear={currentYear}
+                                />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Grid>
             </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid size={12}>
-        <Grid container spacing={gridSpacing}>
-          <Grid size={{ xs: 12 }}>
-            <TotalGrowthBarChart isLoading={isLoading} />
-          </Grid>
-          {/* <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={12}>
+                <Grid container spacing={gridSpacing}>
+                    <Grid size={{ xs: 12 }}>
+                        <TotalGrowthBarChart
+                            isLoading={isLoading}
+                            loadedData={loadedData}   // 👈 全部 or 今年的日誌陣列
+                        />
+                    </Grid>
+                    {/* <Grid size={{ xs: 12, md: 4 }}>
             <PopularCard isLoading={isLoading} />
           </Grid> */}
+                </Grid>
+            </Grid>
         </Grid>
-      </Grid>
-    </Grid>
-  );
+    );
 }
