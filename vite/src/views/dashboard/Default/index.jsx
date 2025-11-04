@@ -38,7 +38,7 @@ export default function Dashboard() {
 
 
     const dirName = 'data';
-    const fileName = `${ dirName }/DailyWorkReport.json`;
+    const fileName = `${dirName}/DailyWorkReport.json`;
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -129,9 +129,12 @@ export default function Dashboard() {
             // ✅ 4. 今年收入最高的公司
             const companySum = {};
             jsonData.forEach((item) => {
-                const company = item.company || '未填寫';
-                const income = (Number(item.amount) || 0) + (Number(item.overtimePay) || 0);
-                companySum[company] = (companySum[company] || 0) + income;
+
+                if (item.date && item.date.startsWith(currentYear)) {
+                    const company = item.company || '未填寫';
+                    const income = (Number(item.amount) || 0) + (Number(item.overtimePay) || 0);
+                    companySum[company] = (companySum[company] || 0) + income;
+                }
             });
             const topCompanyEntry = Object.entries(companySum).sort((a, b) => b[1] - a[1])[0] || ['', 0];
 

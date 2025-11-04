@@ -74,14 +74,72 @@ export default function WorkReportForm({
 
                 <Grid container direction="row" spacing={2}>
                     <Grid size={{ xs: 6 }}>
-                        <TextField label="金額" name="amount" type="number" value={record.amount} onChange={handleChange} fullWidth />
+                        {/* 💰 金額 */}
+                        <TextField
+                            label="金額"
+                            name="amount"
+                            type="number"
+                            fullWidth
+                            value={record.amount || ''}
+                            inputProps={{
+                                min: 1,
+                                step: 1,
+                                inputMode: 'numeric',
+                                pattern: '[0-9]*'
+                            }}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === '' || /^[1-9]\d*$/.test(val)) {
+                                    handleChange(e);
+                                }
+                            }}
+                        />
                     </Grid>
                     <Grid size={{ xs: 6 }}>
-                        <TextField label="稅金 (%)" name="tax" type="number" value={record.tax || ''} onChange={handleChange} fullWidth />
+                        {/* 🧾 稅金 (%)：允許小數（最多一位或兩位） */}
+                        <TextField
+                            label="稅金 (%)"
+                            name="tax"
+                            type="number"
+                            fullWidth
+                            value={record.tax || ''}
+                            inputProps={{
+                                min: 0,
+                                max: 100,
+                                step: 0.01, // ✅ 小數精度
+                                inputMode: 'decimal',
+                            }}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                // ✅ 允許正數且最多兩位小數
+                                if (val === '' || (/^(?:\d+|\d*\.\d{0,2})$/.test(val) && parseFloat(val) >= 0 && parseFloat(val) <= 100)) {
+                                    handleChange(e);
+                                }
+                            }}
+                        />
                     </Grid>
                 </Grid>
 
-                <TextField label="加班費" name="overtimePay" type="number" value={record.overtimePay || ''} onChange={handleChange} fullWidth />
+                {/* ⏰ 加班費 */}
+                <TextField
+                    label="加班費"
+                    name="overtimePay"
+                    type="number"
+                    fullWidth
+                    value={record.overtimePay || ''}
+                    inputProps={{
+                        min: 1,
+                        step: 1,
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*'
+                    }}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '' || /^[1-9]\d*$/.test(val)) {
+                            handleChange(e);
+                        }
+                    }}
+                />
                 <TextField label="備註" name="note" value={record.note} onChange={handleChange} fullWidth />
 
                 <Button variant="contained" color="primary" onClick={onSave}

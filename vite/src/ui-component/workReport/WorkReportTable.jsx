@@ -9,14 +9,24 @@ import {
     Button,
     Stack,
     Box,
-    Pagination
+    Pagination,
+    Checkbox
 } from '@mui/material';
 import SubCard from 'ui-component/cards/SubCard';
 
-export default function WorkReportTable({ title = '', loadedData = [], onEdit, onDelete }) {
+export default function WorkReportTable({
+    title = '',
+    loadedData = [],
+    onEdit,
+    onDelete,
+    onSelectionChange, // ✅ 新增 callback
+    resetKey, // ✅ 新增：父層控制清空用
+    pageResetKey // ✅ 新增：父層控制回第一頁用
+}) {
     // ✅ 確保 loadedData 為陣列
     const safeData = Array.isArray(loadedData) ? loadedData : [];
     const [page, setPage] = useState(1);
+    const [selected, setSelected] = useState([]); // ✅ 勾選狀態
     const rowsPerPage = 15;
 
     // ✅ 計算分頁資料
@@ -26,6 +36,37 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
 
 
     const seenDates = new Set();
+
+    // ✅ 是否全選當前頁
+    const isAllSelected =
+        paginatedData.length > 0 && paginatedData.every((row) => selected.includes(row.pkno));
+
+    // ✅ 切換全選
+    const handleSelectAll = (event) => {
+        if (event.target.checked) {
+            const newSelected = Array.from(
+                new Set([...selected, ...paginatedData.map((r) => r.pkno)])
+            );
+            setSelected(newSelected);
+            onSelectionChange && onSelectionChange(newSelected);
+        } else {
+            const remaining = selected.filter(
+                (pk) => !paginatedData.some((r) => r.pkno === pk)
+            );
+            setSelected(remaining);
+            onSelectionChange && onSelectionChange(remaining);
+        }
+    };
+
+    // ✅ 單筆勾選
+    const handleSelectOne = (pkno, checked) => {
+        const newSelected = checked
+            ? [...selected, pkno]
+            : selected.filter((id) => id !== pkno);
+        setSelected(newSelected);
+        onSelectionChange && onSelectionChange(newSelected);
+    };
+
     // ✅ 合計統計
     const summary =
         safeData.length > 0
@@ -52,6 +93,16 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                 { days: 0, totalAmount: 0, totalOvertime: 0, totalTax: 0, totalFinal: 0 }
             )
             : null;
+
+    // ✅ 父層的 resetKey 一變，清空勾選
+    React.useEffect(() => {
+        setSelected([]);
+    }, [resetKey]);
+
+    // ✅ 父層的 pageResetKey 一變 → 回到第一頁
+    React.useEffect(() => {
+        setPage(1);
+    }, [pageResetKey]);
 
     return (
         <SubCard
@@ -126,7 +177,13 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                     >
                         <TableHead>
                             <TableRow>
-                                <TableCell>-</TableCell>
+                                {/* ✅ 新增全選 checkbox */}
+                                <TableCell>
+                                    <Checkbox
+                                        checked={isAllSelected}
+                                        onChange={handleSelectAll}
+                                    />
+                                </TableCell>
                                 <TableCell>📅 日期</TableCell>
                                 <TableCell>🏢 公司</TableCell>
                                 <TableCell>🛠 工具</TableCell>
@@ -151,7 +208,14 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
 
                                 return (
                                     <TableRow key={item.pkno || index}>
-                                        <TableCell>-</TableCell>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selected.includes(item.pkno)}
+                                                onChange={(e) =>
+                                                    handleSelectOne(item.pkno, e.target.checked)
+                                                }
+                                            />
+                                        </TableCell>
                                         <TableCell>{item.date || '—'}</TableCell>
                                         <TableCell>{item.company || '—'}</TableCell>
                                         <TableCell>{item.tool || '—'}</TableCell>
@@ -209,7 +273,7 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                                                             boxShadow: '0 0 6px rgba(225,122,103,0.4)',
                                                         },
                                                     }}
-                                                    onClick={() => onDelete(item)}
+                                                    onClick={() => onDelete([item.pkno])}
                                                 >
                                                     🗑️ 刪除
                                                 </Button>
@@ -263,6 +327,27 @@ export default function WorkReportTable({ title = '', loadedData = [], onEdit, o
                             />
                         </Box>
                     )}
+                    <Button
+                        variant="contained"
+                        color="error"
+                        disabled={selected.length === 0}
+                        onClick={() => onDelete(selected)}
+                        sx={{
+                            fontWeight: 'bold',
+                            color: '#f7f7f7ff',
+                            backgroundColor: '#f94343ff',
+                            borderColor: '#d32f2f',
+                            '&:hover': {
+                                backgroundColor: '#c01818f9',
+                                color: '#ffffffff',
+                                borderColor: '#e17a67',
+                                boxShadow: '0 0 6px rgba(225,122,103,0.4)',
+                            },
+                            mt: 2
+                        }}
+                    >
+                        🗑️ 批次刪除 ({selected.length})
+                    </Button>
                 </>
             )}
         </SubCard>

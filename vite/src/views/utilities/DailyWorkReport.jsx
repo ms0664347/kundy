@@ -20,7 +20,7 @@ export default function DailyWorkReport() {
         location: '',
         amount: '',
         overtimePay: '',
-        tax: 5,
+        tax: 3,
         note: ''
     });
 
@@ -30,9 +30,13 @@ export default function DailyWorkReport() {
     const [selectedTool, setSelectedTool] = useState('');
     const [editPkno, setEditPkno] = useState(null); // ✅ 新增：記錄目前正在編輯的 pkno
     const [isEditing, setIsEditing] = useState(false); // ✅ 新增：是否為編輯模式
+    const [resetKey, setResetKey] = useState(0);
 
     const dirName = 'data';
     const fileName = `${dirName}/DailyWorkReport.json`;
+
+    const companyStore = useJsonStore('company.json');
+    const toolStore = useJsonStore('tool.json');
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -61,9 +65,6 @@ export default function DailyWorkReport() {
         useEffect(() => { load(); }, []);
         return { items };
     }
-
-    const companyStore = useJsonStore('company.json');
-    const toolStore = useJsonStore('tool.json');
 
     // ✅ 儲存（包含 新增 / 編輯）
     const handleSave = async () => {
@@ -181,6 +182,7 @@ export default function DailyWorkReport() {
                 });
 
             setLoadedData(filteredData);
+
         } catch (err) {
             console.error('❌ 讀取失敗:', err);
             showAlert('warning', '發生錯誤', '請聯絡阿廷或阿夆工程師');
@@ -190,48 +192,42 @@ export default function DailyWorkReport() {
 
 
     // ✅ 刪除指定 pkno 的資料
-    const handleDelete = async (pkno) => {
+    const handleDelete = async (pkList) => {
+        // ✅ 接收陣列
+        if (!Array.isArray(pkList) || pkList.length === 0) {
+            Swal.fire('提示', '請先選擇要刪除的資料！', 'info');
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: `確定要刪除 ${pkList.length} 筆資料嗎？`,
+            text: '刪除後無法復原！',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: '是的，刪除！',
+            cancelButtonText: '取消'
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
-            const result = await Swal.fire({
-                title: '確定要刪除這筆資料嗎？',
-                text: '刪除後無法復原！',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: '是的，刪除！',
-                cancelButtonText: '取消'
-            });
-
-            // ✅ 使用者按「取消」就直接 return
-            if (!result.isConfirmed) {
-                return;
-            }
-
-            // ✅ 確定後才執行刪除邏輯
             const content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
             const jsonData = JSON.parse(content);
-            const newList = jsonData.filter(item => item.pkno !== pkno);
+            const newList = jsonData.filter((item) => !pkList.includes(item.pkno));
 
             await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
 
-            await Swal.fire({
-                icon: 'success',
-                title: '刪除成功',
-                text: '🗑️ 該筆資料已被刪除！',
-                confirmButtonColor: '#3085d6',
-            });
+            Swal.fire('刪除成功', `🗑️ 已刪除 ${pkList.length} 筆資料`, 'success');
 
-            await handleLoad();
+            handleLoad();
+            // ✅ 通知子層清空勾選
+            setResetKey(prev => prev + 1);
 
         } catch (err) {
-            console.error('❌ 刪除失敗:', err);
-            Swal.fire({
-                icon: 'error',
-                title: '刪除失敗',
-                text: '發生錯誤，請聯絡阿廷或阿夆工程師！',
-                confirmButtonColor: '#3085d6',
-            });
+            console.error(err);
+            Swal.fire('刪除失敗', '請聯絡阿廷或阿夆工程師！', 'error');
         }
     };
 
@@ -245,7 +241,7 @@ export default function DailyWorkReport() {
             location: item.location || '',
             amount: item.amount || '',
             overtimePay: item.overtimePay || '',
-            tax: item.tax || 5,
+            tax: item.tax || 3,
             note: item.note || ''
         });
         setDate(dayjs(item.date, 'YYYY/MM/DD'));
@@ -309,12 +305,13 @@ export default function DailyWorkReport() {
                         borderRadius: '8px',
                     }}
                 >
-                    <Box sx={{ minWidth: '1050px' }}> {/* 👈 強制表格寬度超過容器 */}
+                    <Box sx={{ minWidth: '1165px' }}> {/* 👈 強制表格寬度超過容器 */}
                         <WorkReportTable
                             title="本月工作日誌列表"
                             loadedData={loadedData}
                             onEdit={(item) => handleEdit(item)}
-                            onDelete={(item) => handleDelete(item.pkno)}
+                            onDelete={(pkList) => handleDelete(pkList)}   // ✅ 直接傳回原樣
+                            resetKey={resetKey}
                         />
                     </Box>
                 </Box>

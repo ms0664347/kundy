@@ -46,7 +46,7 @@ import '@fontsource/poppins/700.css';
 // reportWebVitals();
 
 // ==============================|| REACT DOM RENDER ||============================== //
-console.log("✅ App started loading");
+// console.log("✅ App started loading");
 
 try {
   const container = document.getElementById('root');
@@ -59,7 +59,7 @@ try {
         <App />
       </ConfigProvider>
     );
-    console.log("✅ React DOM rendered");
+    // console.log("✅ React DOM rendered");
   }
 } catch (e) {
   console.error("💥 React initialization failed:", e);

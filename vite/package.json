@@ -16,6 +16,7 @@
     "@tauri-apps/plugin-fs": "^2.4.4",
     "@vitejs/plugin-react": "4.3.4",
     "apexcharts": "3.46.0",
+    "chinese-lunar": "^0.1.4",
     "dayjs": "^1.11.19",
     "framer-motion": "11.12.0",
     "lodash-es": "4.17.21",

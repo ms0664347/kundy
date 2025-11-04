@@ -57,7 +57,7 @@ function useJsonStore(fileName) {
 
 /** 🏗 主頁面 */
 export default function Company() {
-    const [record, setRecord] = useState({ company: '', tool: '' });
+    const [record, setRecord] = useState({ company: '' });
     const [selectedCompany, setSelectedCompany] = useState('');
 
     const companyStore = useJsonStore('company.json');
@@ -139,6 +139,7 @@ export default function Company() {
                                         }
                                         await companyStore.add(record.company);
                                         showAlert('success', '儲存成功', `公司 "${record.company}" 已新增！`);
+                                        setRecord({ company: '' });
                                     }}
                                     sx={{
                                         width: '40%',
@@ -205,7 +206,7 @@ export default function Company() {
                                         if (result.isConfirmed) {
                                             await companyStore.remove(selectedCompany);
                                             setSelectedCompany('');
-                                            showAlert('success', '刪除成功', '公司資料已移除');
+                                            showAlert('success', '刪除成功', `公司"${selectedCompany}"已移除`);
                                         }
                                     }}
                                     sx={{

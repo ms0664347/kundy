@@ -57,7 +57,7 @@ function useJsonStore(fileName) {
 
 /** 🏗 主頁面 */
 export default function CompanyAndTool() {
-    const [record, setRecord] = useState({ company: '', tool: '' });
+    const [record, setRecord] = useState({ tool: '' });
     const [selectedTool, setSelectedTool] = useState('');
 
     const toolStore = useJsonStore('tool.json');
@@ -139,6 +139,7 @@ export default function CompanyAndTool() {
                                     }
                                     await toolStore.add(record.tool);
                                     showAlert('success', '儲存成功', `工具 "${record.tool}" 已新增！`);
+                                    setRecord({ tool: '' });
                                 }}
                                 sx={{
                                     width: '40%',
@@ -205,7 +206,7 @@ export default function CompanyAndTool() {
                                     if (result.isConfirmed) {
                                         await toolStore.remove(selectedTool);
                                         setSelectedTool('');
-                                        showAlert('success', '刪除成功', '工具資料已移除');
+                                        showAlert('success', '刪除成功', `工具"${selectedTool}"已移除`);
                                     }
                                 }}
                                 sx={{

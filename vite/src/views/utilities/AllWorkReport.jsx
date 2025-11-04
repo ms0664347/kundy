@@ -17,20 +17,27 @@ export default function AllWorkReport() {
     const [loadedData, setLoadedData] = useState([]);
     const [allData, setAllData] = useState([]);
     const [openModal, setOpenModal] = useState(false);
-    const [editingItem, setEditingItem] = useState(null);
     const [editForm, setEditForm] = useState(null);
+    const [resetKey, setResetKey] = useState(0);
+    const [pageResetKey, setPageResetKey] = useState(0);
 
+
+    const dirName = 'data';
+    const fileName = `${dirName}/DailyWorkReport.json`;
+
+    // ✅ 讀取公司與工具
+    const companyStore = useJsonStore('company.json');
+    const toolStore = useJsonStore('tool.json');
 
     // ✅ 點擊「編輯」按鈕
     const handleEdit = (item) => {
-        setEditingItem(item);
         setEditForm({
             company: item.company || '',
             tool: item.tool || '',
             location: item.location || '',
             amount: item.amount || '',
             overtimePay: item.overtimePay || '',
-            tax: item.tax || 5,
+            tax: item.tax || 3,
             note: item.note || '',
             date: dayjs(item.date, 'YYYY/MM/DD'),
             pkno: item.pkno,
@@ -42,7 +49,6 @@ export default function AllWorkReport() {
         setOpenModal(false);
         // 延遲清空資料（避免動畫期間內容變空白）
         setTimeout(() => {
-            setEditingItem(null);
             setEditForm(null);
         }, 300); // MUI Dialog 預設 transitionDuration 約 200ms
     };
@@ -77,12 +83,9 @@ export default function AllWorkReport() {
         month: '',
         company: '',
         tool: '',
-        location: '',
         keyword: ''
     });
 
-    const dirName = 'data';
-    const fileName = `${dirName}/DailyWorkReport.json`;
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -95,7 +98,7 @@ export default function AllWorkReport() {
 
     // ✅ 重置篩選條件
     const handleReset = () => {
-        setFilters({ year: '', month: '', company: '', tool: '', location: '', keyword: '' });
+        setFilters({ year: '', month: '', company: '', tool: '', keyword: '' });
         setLoadedData(allData);
     };
 
@@ -106,10 +109,6 @@ export default function AllWorkReport() {
 
     // ✅ 月份選項（1~12固定）
     const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
-
-    // ✅ 讀取公司與工具
-    const companyStore = useJsonStore('company.json');
-    const toolStore = useJsonStore('tool.json');
 
     /** ✅ 共用 JSON 檔案讀取 Hook */
     function useJsonStore(fileName) {
@@ -188,59 +187,53 @@ export default function AllWorkReport() {
     };
 
     // ✅ 刪除指定 pkno 的資料
-    const handleDelete = async (pkno) => {
+    const handleDelete = async (pkList) => {
+        // ✅ 接收陣列
+        if (!Array.isArray(pkList) || pkList.length === 0) {
+            Swal.fire('提示', '請先選擇要刪除的資料！', 'info');
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: `確定要刪除 ${pkList.length} 筆資料嗎？`,
+            text: '刪除後無法復原！',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: '是的，刪除！',
+            cancelButtonText: '取消'
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
-            const result = await Swal.fire({
-                title: '確定要刪除這筆資料嗎？',
-                text: '刪除後無法復原！',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: '是的，刪除！',
-                cancelButtonText: '取消'
-            });
-
-            // ✅ 使用者按「取消」就直接 return
-            if (!result.isConfirmed) {
-                return;
-            }
-
-            // ✅ 確定後才執行刪除邏輯
             const content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
             const jsonData = JSON.parse(content);
-            const newList = jsonData.filter(item => item.pkno !== pkno);
+            const newList = jsonData.filter((item) => !pkList.includes(item.pkno));
 
             await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
 
-            await Swal.fire({
-                icon: 'success',
-                title: '刪除成功',
-                text: '🗑️ 該筆資料已被刪除！',
-                confirmButtonColor: '#3085d6',
-            });
+            Swal.fire('刪除成功', `🗑️ 已刪除 ${pkList.length} 筆資料`, 'success');
 
             const refreshedData = await handleLoadAll();
             handleSearch(refreshedData);
 
+            // ✅ 通知子層清空勾選
+            setResetKey(prev => prev + 1);
+
         } catch (err) {
-            console.error('❌ 刪除失敗:', err);
-            Swal.fire({
-                icon: 'error',
-                title: '刪除失敗',
-                text: '發生錯誤，請聯絡阿廷或阿夆工程師！',
-                confirmButtonColor: '#3085d6',
-            });
+            console.error(err);
+            Swal.fire('刪除失敗', '請聯絡阿廷或阿夆工程師！', 'error');
         }
     };
 
-    // ✅ 搜尋（可傳入 data）
+
     const handleSearch = (data) => {
         const baseData = Array.isArray(data) ? data : allData;
         let filtered = [...baseData];
 
-        const { year, month, company, tool, location, keyword } = filters;
-        const toText = (v) => (Array.isArray(v) ? v.join(', ') : v ? String(v) : '');
+        const { year, month, company, tool, keyword } = filters;
 
         if (year)
             filtered = filtered.filter((item) => item.date?.startsWith(year));
@@ -251,15 +244,6 @@ export default function AllWorkReport() {
         if (tool)
             filtered = filtered.filter((item) => item.tool === tool);
 
-        if (location) {
-            const kw = location.toLowerCase();
-            filtered = filtered.filter((item) =>
-                [item.note, item.company, item.tool, item.location]
-                    .filter(Boolean)
-                    .some((v) => v.toLowerCase().includes(kw))
-            );
-        }
-
         if (keyword) {
             const kw = keyword.toLowerCase();
             filtered = filtered.filter((item) =>
@@ -269,8 +253,18 @@ export default function AllWorkReport() {
             );
         }
 
+        // ✅ 排序：確保日期由新到舊，空白日期排最後
+        filtered.sort((a, b) => {
+            const dateA = a.date ? new Date(a.date) : new Date(0);
+            const dateB = b.date ? new Date(b.date) : new Date(0);
+            return dateB - dateA;
+        });
+
         setLoadedData(filtered);
+        setPageResetKey(prev => prev + 1); // ✅ 通知子層回到第一頁
+
     };
+
 
     useEffect(() => {
         handleLoadAll();
@@ -371,15 +365,6 @@ export default function AllWorkReport() {
                     </Select>
                 </FormControl>
 
-                {/* 地點 */}
-                <TextField
-                    label="地點"
-                    variant="outlined"
-                    value={filters.location}
-                    onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                    sx={{ minWidth: 200 }}
-                />
-
                 {/* 關鍵字 */}
                 <TextField
                     label="搜尋關鍵字"
@@ -452,7 +437,9 @@ export default function AllWorkReport() {
                         title=""
                         loadedData={loadedData || []}
                         onEdit={(item) => handleEdit(item)}
-                        onDelete={(item) => handleDelete(item.pkno)}
+                        onDelete={(pkList) => handleDelete(pkList)}   // ✅ 直接傳回原樣
+                        resetKey={resetKey}   // ✅ 加這行
+                        pageResetKey={pageResetKey}   // ✅ 新增
                     />
                 </Box>
             </Box>
