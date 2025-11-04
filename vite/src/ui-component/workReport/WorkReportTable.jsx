@@ -128,7 +128,7 @@ export default function WorkReportTable({
                     mb: 2,
                     px: 1,
                     color: '#555',
-                    fontSize: '1rem'
+                    fontSize: '1.4rem'
                 }}
             >
                 <span>
@@ -160,12 +160,13 @@ export default function WorkReportTable({
                         sx={{
                             width: '100%',
                             borderCollapse: 'collapse',
+                            fontSize: '1rem', // ✅ 整張表格字放大
                             '& th': {
                                 backgroundColor: '#f5f5f5',
                                 fontWeight: 'bold',
                                 textAlign: 'center',
-                                fontSize: '1.2rem',
-                                padding: '12px'
+                                fontSize: '2rem',
+                                padding: '8px'
                             },
                             '& td': {
                                 textAlign: 'center',
@@ -175,25 +176,65 @@ export default function WorkReportTable({
                             '& tr:hover': { backgroundColor: '#e8f4ff' }
                         }}
                     >
-                        <TableHead>
-                            <TableRow>
+                        <TableHead >
+                            <TableRow >
                                 {/* ✅ 新增全選 checkbox */}
-                                <TableCell>
+                                <TableCell >
                                     <Checkbox
                                         checked={isAllSelected}
                                         onChange={handleSelectAll}
                                     />
                                 </TableCell>
-                                <TableCell>📅 日期</TableCell>
-                                <TableCell>🏢 公司</TableCell>
-                                <TableCell>🛠 工具</TableCell>
-                                <TableCell>📍 地點</TableCell>
-                                <TableCell>💬 備註</TableCell>
-                                <TableCell>💰 金額</TableCell>
-                                <TableCell>⏰ 加班費</TableCell>
-                                <TableCell>🧾 稅金 (%)</TableCell>
-                                <TableCell>💵 含稅總金額</TableCell>
-                                <TableCell>⚙️ 操作</TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        📅 日期
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        🏢 公司
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        🛠 工具
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        📍 地點
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        💬 備註
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        💰 金額
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        ⏰ 加班費
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        🧾 稅金 (%)
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        💵 含稅總金額
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
+                                        ⚙️ 操作
+                                    </Typography>
+                                </TableCell>
                             </TableRow>
                         </TableHead>
 
@@ -216,23 +257,23 @@ export default function WorkReportTable({
                                                 }
                                             />
                                         </TableCell>
-                                        <TableCell>{item.date || '—'}</TableCell>
-                                        <TableCell>{item.company || '—'}</TableCell>
-                                        <TableCell>{item.tool || '—'}</TableCell>
-                                        <TableCell>{item.location || '—'}</TableCell>
-                                        <TableCell>{item.note || '—'}</TableCell>
-                                        <TableCell>{amount.toLocaleString()}</TableCell>
-                                        <TableCell>{overtimePay.toLocaleString()}</TableCell>
-                                        <TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.date || '—'}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.company || '—'}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.tool || '—'}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.location || '—'}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.note || '—'}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{amount.toLocaleString()}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{overtimePay.toLocaleString()}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                             {taxRate}%<br />
-                                            <Typography variant="caption" color="textSecondary">
+                                            <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                                                 +{taxValue.toLocaleString()}
                                             </Typography>
                                         </TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                                        <TableCell sx={{ fontWeight: 'bold', color: '#1976d2', fontSize: { xs: '1.2rem', sm: '1.4rem' } }}>
                                             {total.toLocaleString()}
                                             <br />
-                                            <Typography variant="caption" color="textSecondary">
+                                            <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
                                                 = {subtotal.toLocaleString()} + {taxValue.toLocaleString()}
                                             </Typography>
                                         </TableCell>
@@ -262,6 +303,7 @@ export default function WorkReportTable({
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
+                                                    fontSize="medium"
                                                     sx={{
                                                         fontWeight: 'bold',
                                                         color: '#d32f2f',
@@ -292,19 +334,19 @@ export default function WorkReportTable({
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    <TableCell sx={{ fontWeight: 'bold' }}>📊 合計</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>{summary.days} 天</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>📊 合計</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>{summary.days} 天</TableCell>
                                     <TableCell colSpan={4}>—</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                         {summary.totalAmount.toLocaleString()}
                                     </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                         {summary.totalOvertime.toLocaleString()}
                                     </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                         {summary.totalTax.toLocaleString()}
                                     </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#1976d2', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                         {summary.totalFinal.toLocaleString()}
                                     </TableCell>
                                     <TableCell />
@@ -343,7 +385,8 @@ export default function WorkReportTable({
                                 borderColor: '#e17a67',
                                 boxShadow: '0 0 6px rgba(225,122,103,0.4)',
                             },
-                            mt: 2
+                            mt: 2,
+                            fontSize: { xs: '1rem', sm: '1.2rem' }
                         }}
                     >
                         🗑️ 批次刪除 ({selected.length})

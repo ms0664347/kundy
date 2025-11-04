@@ -18,8 +18,6 @@ import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-reac
 
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { solarToLunar } from 'chinese-lunar';
-import dayjs from 'dayjs';
 
 function HeaderAvatarComponent({ children, ...others }, ref) {
 
@@ -99,57 +97,20 @@ function MobileSearch({ value, setValue, popupState }) {
 
 export default function SearchSection() {
 
-    const [value, setValue] = useState('');
     const texts = [
-        'Hi Kundy 你好😊',
-        '開車注意安全，不疲勞駕駛🚗',
+        'Welcome to Kundy!😊',
+        'Hi! Kundy 你好😊',
+        '工作注意安全，不疲勞駕駛🚗',
         '今天是個適合上班的好日子 🚜',
-        '工作注意安全，多喝水💧',
+        '沒事多喝水，多喝水沒事💧',
         '爸爸你上班辛苦了 💪',
         '時間不早了，早點休息😎'
     ];
 
     const [index, setIndex] = useState(0);
-    const [festival, setFestival] = useState('');
-    const [lunarText, setLunarText] = useState('');
 
-    useEffect(() => {
-        const today = new Date();
-        const solarMonth = today.getMonth() + 1;
-        const solarDay = today.getDate();
 
-        // ✅ 取得農曆日期
-        const lunar = solarToLunar(today);
-        setLunarText(`農曆 ${lunar.month} 月 ${lunar.day} 日`);
 
-        // ✅ 國曆節日
-        const nationalFestivals = {
-            '1-1': '🎉 元旦快樂！',
-            '2-28': '🇹🇼 和平紀念日',
-            '10-10': '🇹🇼 雙十國慶快樂！',
-            '12-25': '🎄 聖誕節快樂！'
-        };
-
-        // ✅ 農曆節日
-        const lunarFestivals = {
-            '1-1': '🎆 新年快樂！',
-            '5-5': '🐉 端午節快樂！',
-            '7-7': '💞 七夕快樂！',
-            '8-8': '🎉 父親節快樂！',
-            '8-15': '🏮 中秋節快樂！'
-        };
-
-        const solarKey = `${solarMonth}-${solarDay}`;
-        const lunarKey = `${lunar.month}-${lunar.day}`;
-
-        if (nationalFestivals[solarKey]) {
-            setFestival(nationalFestivals[solarKey]);
-        } else if (lunarFestivals[lunarKey]) {
-            setFestival(lunarFestivals[lunarKey]);
-        } else {
-            setFestival('');
-        }
-    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -171,6 +132,7 @@ export default function SearchSection() {
                     ml: '10%',
                     height: '70px',
                     overflow: 'hidden', // 讓動畫只顯示範圍內
+                    position: 'relative',
                 }}
             >
                 <AnimatePresence mode="wait">
@@ -196,37 +158,8 @@ export default function SearchSection() {
                     </motion.div>
                 </AnimatePresence>
 
-                {/* 節慶訊息 */}
-                {festival && (
-                    <Typography
-                        variant="subtitle1"
-                        sx={{
-                            mt: 5,
-                            color: '#d32f2f',
-                            fontWeight: 'bold',
-                            animation: 'blink 1s infinite',
-                            '@keyframes blink': {
-                                '0%, 100%': { opacity: 1 },
-                                '50%': { opacity: 0.3 }
-                            }
-                        }}
-                    >
-                        {festival}
-                    </Typography>
-                )}
+
             </Box>
-            <Typography
-                variant="caption"
-                sx={{
-                    mt: 1,
-                    color: '#777',
-                    textAlign: 'right', // 👈 靠右
-                    width: '10%',      // 👈 讓靠右有效果
-                    fontSize: '0.8rem' // ✅ 正確寫法
-                }}
-            >
-                {lunarText}
-            </Typography>
         </>
     );
 }

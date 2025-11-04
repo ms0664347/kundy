@@ -20,7 +20,7 @@ export default function TotalGrowthBarChart({ isLoading, loadedData = [] }) {
     const theme = useTheme();
     const { mode } = useConfig();
 
-    const monthLabels = Array.from({ length: 12 }, (_, i) => `${String(i + 1).padStart(2, '0')}月`);
+    const monthLabels = Array.from({ length: 12 }, (_, i) => `${ String(i + 1).padStart(2, '0') }月`);
 
     const fixedColors = ['#cc47f0ff', '#825be7ff', '#4268d9ff', '#6ae759ff', '#e8e853ff'];
     const otherColor = '#dbd9d9ff';
@@ -32,7 +32,7 @@ export default function TotalGrowthBarChart({ isLoading, loadedData = [] }) {
     };
 
     function buildMonthlySeries(data, groupKey, year) {
-        const monthLabels = Array.from({ length: 12 }, (_, i) => `${String(i + 1).padStart(2, '0')}月`);
+        const monthLabels = Array.from({ length: 12 }, (_, i) => `${ String(i + 1).padStart(2, '0') }月`);
         const toMonthKey = (dateStr) => {
             const d = dayjs(dateStr, ['YYYY/MM/DD', 'YYYY-MM-DD'], true);
             return d.isValid() ? d.format('YYYY-MM') : null;
@@ -40,7 +40,7 @@ export default function TotalGrowthBarChart({ isLoading, loadedData = [] }) {
 
         const yearData = data.filter(it => {
             const m = toMonthKey(it.date);
-            return m && m.startsWith(`${year}-`);
+            return m && m.startsWith(`${ year }-`);
         });
 
         const acc = new Map(); // Map<groupName, number[12]>
@@ -201,7 +201,7 @@ export default function TotalGrowthBarChart({ isLoading, loadedData = [] }) {
                                         plotOptions: {
                                             bar: {
                                                 horizontal: false, // 橫向長條（false=直向）
-                                                columnWidth: '40%', // 長條寬度（百分比或像素）
+                                                columnWidth: '30%', // 長條寬度（百分比或像素）
                                                 borderRadius: 6
                                             }
                                         },
@@ -210,7 +210,7 @@ export default function TotalGrowthBarChart({ isLoading, loadedData = [] }) {
                                             labels: {
                                                 rotate: 0,               // 是否旋轉文字
                                                 style: {                 // MUI 主題可帶進來設定顏色字型
-                                                    fontSize: '12px'
+                                                    fontSize: '16px'
                                                 }
                                             },
                                             // axisBorder: { show: false },
@@ -218,28 +218,36 @@ export default function TotalGrowthBarChart({ isLoading, loadedData = [] }) {
                                         },
                                         yaxis: {
                                             labels: {
-                                                formatter: (v) => `${Number(v || 0).toLocaleString()}`, // Y 軸顯示千分位
-                                                style: { fontSize: '12px' }
+                                                formatter: (v) => `${ Number(v || 0).toLocaleString() }`, // Y 軸顯示千分位
+                                                style: { fontSize: '16px' }
                                             }
                                         },
                                         colors: chartData.colors,
                                         dataLabels: { enabled: false }, // 每個柱子上是否顯示數字（通常關閉較清爽）
                                         legend: {
-                                            position: 'bottom',         // 圖例放底下
-                                            markers: { radius: 4 },    // 圖例點點的外觀
-                                            itemMargin: { horizontal: 8, vertical: 4 }
+                                            position: 'bottom', // 圖例放底下
+                                            fontSize: '18px',   // ✅ 調整文字大小
+                                            markers: {
+                                                width: 24,        // ✅ 小圓點寬度
+                                                height: 24,       // ✅ 小圓點高度
+                                                radius: 4         // ✅ 圓角（0=方形、最大變圓形）
+                                            },
+                                            itemMargin: {
+                                                horizontal: 12,   // ✅ 左右間距
+                                                vertical: 6       // ✅ 上下間距
+                                            }
                                         },
                                         tooltip: {
                                             shared: true,               // 同一 X 值顯示多個 series 的 tooltip
                                             intersect: false,
                                             y: {
-                                                formatter: (v) => `$${Number(v || 0).toLocaleString()}` // 金額格式
+                                                formatter: (v) => `$${ Number(v || 0).toLocaleString() }` // 金額格式
                                             }
                                         },
                                         grid: {
-                                            borderColor: theme.palette.divider,
-                                            strokeDashArray: 3,         // 網格線虛線
-                                        },
+                                            borderColor: 'rgba(0, 0, 0, 0.5)', // 比 theme.palette.divider 深一點
+                                            strokeDashArray: 3
+                                        }
 
                                     }}
                                 />

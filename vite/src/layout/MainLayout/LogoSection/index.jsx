@@ -6,7 +6,7 @@ import Link from '@mui/material/Link';
 // project imports
 import Box from '@mui/material/Box';
 
-import KundyLogo from '../../../assets/images/kundy-logo.jpg';
+import KundyLogo from '../../../assets/images/kundy-logo.png';
 
 
 // ==============================|| MAIN LOGO ||============================== //
