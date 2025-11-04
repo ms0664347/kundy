@@ -102,7 +102,8 @@ export default function SearchSection() {
     const [value, setValue] = useState('');
     const texts = [
         'Hi Kundy 你好😊',
-        '今天是個適合開工的好日子 🚜',
+        '開車注意安全，不疲勞駕駛🚗',
+        '今天是個適合上班的好日子 🚜',
         '工作注意安全，多喝水💧',
         '爸爸你上班辛苦了 💪',
         '時間不早了，早點休息😎'
@@ -159,40 +160,6 @@ export default function SearchSection() {
 
     return (
         <>
-            {/* <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                <PopupState variant="popper" popupId="demo-popup-popper">
-                    {(popupState) => (
-                        <>
-                            <Box sx={{ ml: 2 }}>
-                                <HeaderAvatar {...bindToggle(popupState)}>
-                                    <IconSearch stroke={1.5} size="19.2px" />
-                                </HeaderAvatar>
-                            </Box>
-                            <Popper
-                                {...bindPopper(popupState)}
-                                transition
-                                sx={{ zIndex: 1100, width: '99%', top: '-55px !important', px: { xs: 1.25, sm: 1.5 } }}
-                            >
-                                {({ TransitionProps }) => (
-                                    <>
-                                        <Transitions type="zoom" {...TransitionProps} sx={{ transformOrigin: 'center left' }}>
-                                            <Card sx={{ bgcolor: 'background.default', border: 0, boxShadow: 'none' }}>
-                                                <Box sx={{ p: 2 }}>
-                                                    <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                                                        <Grid size="grow">
-                                                            <MobileSearch value={value} setValue={setValue} popupState={popupState} />
-                                                        </Grid>
-                                                    </Grid>
-                                                </Box>
-                                            </Card>
-                                        </Transitions>
-                                    </>
-                                )}
-                            </Popper>
-                        </>
-                    )}
-                </PopupState>
-            </Box> */}
             <Box
                 sx={{
                     display: 'flex',
@@ -247,22 +214,19 @@ export default function SearchSection() {
                         {festival}
                     </Typography>
                 )}
-
-                <Typography
-                    variant="caption"
-                    sx={{
-                        mt: 1,
-                        color: '#777',
-                        textAlign: 'right', // 👈 靠右
-                        width: '100%',      // 👈 讓靠右有效果
-                        pr: 2,               // 👈 稍微右移一些距離
-                        ml: 2
-                    }}
-                >
-                    {lunarText}
-                </Typography>
-
             </Box>
+            <Typography
+                variant="caption"
+                sx={{
+                    mt: 1,
+                    color: '#777',
+                    textAlign: 'right', // 👈 靠右
+                    width: '10%',      // 👈 讓靠右有效果
+                    fontSize: '0.8rem' // ✅ 正確寫法
+                }}
+            >
+                {lunarText}
+            </Typography>
         </>
     );
 }
