@@ -35,7 +35,7 @@ function LinearProgressWithLabel({ value, ...others }) {
                         </Typography>
                     </Grid>
                     <Grid>
-                        <Typography variant="h6" color="inherit">{`${ Math.round(value) }%`}</Typography>
+                        <Typography variant="h6" color="inherit">{`${Math.round(value)}%`}</Typography>
                     </Grid>
                 </Grid>
             </Grid>
@@ -48,10 +48,10 @@ function LinearProgressWithLabel({ value, ...others }) {
                     sx={{
                         height: 10,
                         borderRadius: 30,
-                        [`&.${ linearProgressClasses.colorPrimary }`]: {
+                        [`&.${linearProgressClasses.colorPrimary}`]: {
                             bgcolor: 'background.paper'
                         },
-                        [`& .${ linearProgressClasses.bar }`]: {
+                        [`& .${linearProgressClasses.bar}`]: {
                             borderRadius: 5,
                             bgcolor: 'primary.dark'
                         }
@@ -85,14 +85,14 @@ function MenuCard() {
         const solarMonth = today.getMonth() + 1;
         const solarDay = today.getDate();
         const weekDay = weekMap[dayjs(today).format('dddd')];
-        const solarText = `國曆 ${ dayjs(today).format('YYYY/MM/DD') }（${ weekDay }）`;
+        const solarText = `國曆 ${dayjs(today).format('YYYY/MM/DD')}（${weekDay}）`;
 
         // ✅ 設定國曆日期
         setSolarText(solarText);
 
         // ✅ 取得農曆日期
         const lunar = solarToLunar(today);
-        setLunarText(`農曆 ${ lunar.month } 月 ${ lunar.day } 日`);
+        setLunarText(`農曆 ${lunar.month} 月 ${lunar.day} 日`);
 
         // ✅ 國曆節日
         const nationalFestivals = {
@@ -120,10 +120,8 @@ function MenuCard() {
             '12-30': ['🎉 除夕快樂！']
         };
 
-        // const solarKey = `${ solarMonth }-${ solarDay }`;
-        const solarKey = '8-8';
-        // const lunarKey = `${ lunar.month }-${ lunar.day }`;
-        const lunarKey = '5-5';
+        const solarKey = `${solarMonth}-${solarDay}`;
+        const lunarKey = `${lunar.month}-${lunar.day}`;
 
         let festivalMessages = [];
 

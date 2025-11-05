@@ -98,13 +98,10 @@ function MobileSearch({ value, setValue, popupState }) {
 export default function SearchSection() {
 
     const texts = [
-        'Welcome to Kundy!😊',
-        'Hi! Kundy 你好😊',
-        '工作注意安全，不疲勞駕駛🚗',
-        '今天是個適合上班的好日子 🚜',
-        '沒事多喝水，多喝水沒事💧',
-        '爸爸你上班辛苦了 💪',
-        '時間不早了，早點休息😎'
+        'Welcome to Kundy! 😊 Hi! Kundy 你好 😊',
+        '工作注意安全，不疲勞駕駛 🚗，今天是個適合上班的好日子 🚜',
+        '少抽菸，沒事多喝水，多喝水沒事 💧',
+        '爸爸你上班辛苦了 💪 時間不早了，早點休息😎',
     ];
 
     const [index, setIndex] = useState(0);
@@ -128,8 +125,7 @@ export default function SearchSection() {
                     justifyContent: 'center',
                     borderRadius: 1,
                     p: 2,
-                    width: '50%',
-                    ml: '10%',
+                    width: '100%',
                     height: '70px',
                     overflow: 'hidden', // 讓動畫只顯示範圍內
                     position: 'relative',
@@ -149,7 +145,7 @@ export default function SearchSection() {
                             sx={{
                                 fontWeight: 'bold',
                                 color: 'primary.main',
-                                fontSize: '1.2rem',
+                                fontSize: '1.4rem',
                                 textAlign: 'center',
                             }}
                         >

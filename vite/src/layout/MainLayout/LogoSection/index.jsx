@@ -20,11 +20,10 @@ export default function LogoSection() {
         alt="Kundy Logo"
         sx={{
           height: 50,
-          width: 'auto',
+          width: '100%',
           objectFit: 'contain',
           display: 'block',
           cursor: 'pointer',
-          ml: 4
         }}
       />
     </Link>
