@@ -16,6 +16,7 @@ const UtilsShadow = Loadable(lazy(() => import('views/utilities/Shadow')));
 
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
+const DailyCostReport = Loadable(lazy(() => import('views/sample-page/DailyCostReport')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -53,8 +54,8 @@ const MainRoutes = {
       element: <UtilsTool />
     },
     {
-      path: '/sample-page',
-      element: <SamplePage />
+      path: 'dailyCostReport',
+      element: <DailyCostReport />
     }
   ]
 };

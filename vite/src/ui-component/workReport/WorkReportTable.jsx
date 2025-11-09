@@ -37,6 +37,12 @@ export default function WorkReportTable({
 
     const seenDates = new Set();
 
+    // ✅ 先計算每個日期出現次數
+    const dateGroup = {};
+    safeData.forEach(item => {
+        dateGroup[item.date] = (dateGroup[item.date] || 0) + 1;
+    });
+
     // ✅ 是否全選當前頁
     const isAllSelected =
         paginatedData.length > 0 && paginatedData.every((row) => selected.includes(row.pkno));
@@ -247,6 +253,10 @@ export default function WorkReportTable({
                                 const total = Math.round(subtotal * (1 + taxRate / 100));
                                 const taxValue = total - subtotal;
 
+                                // ✅ 判斷是否為該日期的第一筆（用 paginatedData 的 index 找前一筆）
+                                const isFirstOfDate =
+                                    index === 0 || paginatedData[index - 1].date !== item.date;
+
                                 return (
                                     <TableRow key={item.pkno || index}>
                                         <TableCell>
@@ -257,7 +267,15 @@ export default function WorkReportTable({
                                                 }
                                             />
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.date || '—'}</TableCell>
+                                        {/* ✅ 日期欄，只在第一筆輸出 rowSpan */}
+                                        {isFirstOfDate && (
+                                            <TableCell
+                                                rowSpan={dateGroup[item.date]} // ✅ 自動合併
+                                                sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}
+                                            >
+                                                {item.date}
+                                            </TableCell>
+                                        )}
                                         <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.company || '—'}</TableCell>
                                         <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.tool || '—'}</TableCell>
                                         <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.location || '—'}</TableCell>
