@@ -12,10 +12,18 @@ const other = {
   type: 'group',
   children: [
     {
-      id: 'sample-page',
+      id: 'dailyCostReport',
       title: '每日支出紀錄',
       type: 'item',
       url: '/dailyCostReport',
+      icon: icons.IconBrandChrome,
+      breadcrumbs: false
+    },
+    {
+      id: 'category',
+      title: '支出類型設定',
+      type: 'item',
+      url: '/category',
       icon: icons.IconBrandChrome,
       breadcrumbs: false
     }
