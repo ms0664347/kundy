@@ -56,11 +56,11 @@ function useJsonStore(fileName) {
 }
 
 /** 🏗 主頁面 */
-export default function Company() {
+export default function Method() {
     const [record, setRecord] = useState({ company: '' });
-    const [selectedCompany, setSelectedCompany] = useState('');
+    const [selectedMethod, setselectedMethod] = useState('');
 
-    const companyStore = useJsonStore('company.json');
+    const methodStore = useJsonStore('method.json');
 
     const handleChange = (e) => {
         setRecord({ ...record, [e.target.name]: e.target.value });
@@ -87,7 +87,7 @@ export default function Company() {
                     color: '#333',
                 }}
             >
-                🏢公司設定管理
+                💳支出方式設定管理
             </Typography>
         }>
             <Grid container spacing={gridSpacing}>
@@ -119,11 +119,11 @@ export default function Company() {
                                     mt: 6,
                                 }}
                             >
-                                🖊️新增公司
+                                ✏️新增方式
                             </Typography>
                             <Grid container direction="column" spacing={1}>
                                 <TextField
-                                    label="請輸入公司名稱"
+                                    label="請輸入支出方式名稱"
                                     name="company"
                                     value={record.company}
                                     onChange={handleChange}
@@ -135,10 +135,10 @@ export default function Company() {
                                     color="primary"
                                     onClick={async () => {
                                         if (!record.company.trim()) {
-                                            return showAlert('warning', '請輸入公司名稱', '');
+                                            return showAlert('warning', '請輸入支出方式名稱', '');
                                         }
-                                        await companyStore.add(record.company);
-                                        showAlert('success', '儲存成功', `公司 "${ record.company }" 已新增！`);
+                                        await methodStore.add(record.company);
+                                        showAlert('success', '儲存成功', `方式 "${ record.company }" 已新增！`);
                                         setRecord({ company: '' });
                                     }}
                                     sx={{
@@ -169,17 +169,17 @@ export default function Company() {
                                         mt: 6,
                                     }}
                                 >
-                                    🗑️刪除公司
+                                    🔥刪除方式
                                 </Typography>
                                 <FormControl fullWidth>
-                                    <InputLabel id="company-select-label">請選擇公司</InputLabel>
+                                    <InputLabel id="company-select-label">請選擇方式</InputLabel>
                                     <Select
                                         labelId="company-select-label"
-                                        value={selectedCompany}
-                                        label="公司名稱"
-                                        onChange={(e) => setSelectedCompany(e.target.value)}
+                                        value={selectedMethod}
+                                        label="方式名稱"
+                                        onChange={(e) => setselectedMethod(e.target.value)}
                                     >
-                                        {(companyStore.items || []).map((name, index) => (
+                                        {(methodStore.items || []).map((name, index) => (
                                             <MenuItem key={index} value={name}>
                                                 {name}
                                             </MenuItem>
@@ -191,11 +191,11 @@ export default function Company() {
                                 <Button
                                     variant="contained"
                                     color="error"
-                                    disabled={!selectedCompany}
+                                    disabled={!selectedMethod}
                                     onClick={async (e) => {
-                                        if (!selectedCompany) return;
+                                        if (!selectedMethod) return;
                                         const result = await Swal.fire({
-                                            title: `確定刪除公司 "${ selectedCompany }"？`,
+                                            title: `確定刪除方式 "${ selectedMethod }"？`,
                                             icon: 'warning',
                                             showCancelButton: true,
                                             confirmButtonColor: '#d33',
@@ -204,9 +204,9 @@ export default function Company() {
                                             cancelButtonText: '取消',
                                         });
                                         if (result.isConfirmed) {
-                                            await companyStore.remove(selectedCompany);
-                                            setSelectedCompany('');
-                                            showAlert('success', '刪除成功', `公司"${ selectedCompany }"已移除`);
+                                            await methodStore.remove(selectedMethod);
+                                            setselectedMethod('');
+                                            showAlert('success', '刪除成功', `方式"${ selectedMethod }"已移除`);
                                         }
                                     }}
                                     sx={{

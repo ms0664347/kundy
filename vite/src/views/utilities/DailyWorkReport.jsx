@@ -272,7 +272,7 @@ export default function DailyWorkReport() {
                         color: '#333',
                     }}
                 >
-                    工作日誌管理
+                    🖊️每日工作日誌管理
                 </Typography>
             }
         >

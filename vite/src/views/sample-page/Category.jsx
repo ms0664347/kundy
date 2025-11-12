@@ -12,7 +12,7 @@ function useJsonStore(fileName) {
     const [items, setItems] = useState([]);
 
     const dirName = 'data';
-    const filePath = `${dirName}/${fileName}`;
+    const filePath = `${ dirName }/${ fileName }`;
 
     // 讀取 JSON
     const load = async () => {
@@ -21,7 +21,7 @@ function useJsonStore(fileName) {
             const jsonData = JSON.parse(content);
             setItems(jsonData || []);
         } catch {
-            console.warn(`⚠ 尚無 ${fileName} 紀錄`);
+            console.warn(`⚠ 尚無 ${ fileName } 紀錄`);
             setItems([]);
         }
     };
@@ -56,7 +56,7 @@ function useJsonStore(fileName) {
 }
 
 /** 🏗 主頁面 */
-export default function Company() {
+export default function Category() {
     const [record, setRecord] = useState({ company: '' });
     const [selectedCategory, setselectedCategory] = useState('');
 
@@ -87,7 +87,7 @@ export default function Company() {
                     color: '#333',
                 }}
             >
-                支出類別設定管理
+                🗂️支出類別設定管理
             </Typography>
         }>
             <Grid container spacing={gridSpacing}>
@@ -138,7 +138,7 @@ export default function Company() {
                                             return showAlert('warning', '請輸入支出類別名稱', '');
                                         }
                                         await categoryStore.add(record.company);
-                                        showAlert('success', '儲存成功', `類別 "${record.company}" 已新增！`);
+                                        showAlert('success', '儲存成功', `類別 "${ record.company }" 已新增！`);
                                         setRecord({ company: '' });
                                     }}
                                     sx={{
@@ -151,7 +151,7 @@ export default function Company() {
                                         '&:hover': { backgroundColor: '#1c27f9ff' },
                                     }}
                                 >
-                                    💾 儲存類別
+                                    💾 儲存
                                 </Button>
 
                                 <Typography
@@ -169,7 +169,7 @@ export default function Company() {
                                         mt: 6,
                                     }}
                                 >
-                                    刪除類別
+                                    🔥刪除類別
                                 </Typography>
                                 <FormControl fullWidth>
                                     <InputLabel id="company-select-label">請選擇類別</InputLabel>
@@ -195,7 +195,7 @@ export default function Company() {
                                     onClick={async (e) => {
                                         if (!selectedCategory) return;
                                         const result = await Swal.fire({
-                                            title: `確定刪除類別 "${selectedCategory}"？`,
+                                            title: `確定刪除類別 "${ selectedCategory }"？`,
                                             icon: 'warning',
                                             showCancelButton: true,
                                             confirmButtonColor: '#d33',
@@ -206,7 +206,7 @@ export default function Company() {
                                         if (result.isConfirmed) {
                                             await categoryStore.remove(selectedCategory);
                                             setselectedCategory('');
-                                            showAlert('success', '刪除成功', `類別"${selectedCategory}"已移除`);
+                                            showAlert('success', '刪除成功', `類別"${ selectedCategory }"已移除`);
                                         }
                                     }}
                                     sx={{

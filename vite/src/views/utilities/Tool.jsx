@@ -12,7 +12,7 @@ function useJsonStore(fileName) {
     const [items, setItems] = useState([]);
 
     const dirName = 'data';
-    const filePath = `${dirName}/${fileName}`;
+    const filePath = `${ dirName }/${ fileName }`;
 
     // 讀取 JSON
     const load = async () => {
@@ -21,7 +21,7 @@ function useJsonStore(fileName) {
             const jsonData = JSON.parse(content);
             setItems(jsonData || []);
         } catch {
-            console.warn(`⚠ 尚無 ${fileName} 紀錄`);
+            console.warn(`⚠ 尚無 ${ fileName } 紀錄`);
             setItems([]);
         }
     };
@@ -87,7 +87,7 @@ export default function CompanyAndTool() {
                     color: '#333',
                 }}
             >
-                工具設定管理
+                🛠️工具設定管理
             </Typography>
         }>
             <Grid container spacing={gridSpacing}>
@@ -120,7 +120,7 @@ export default function CompanyAndTool() {
                                     mt: 6,
                                 }}
                             >
-                                新增工具
+                                🖊️新增工具
                             </Typography>
                             <TextField
                                 label="請輸入工具名稱"
@@ -138,7 +138,7 @@ export default function CompanyAndTool() {
                                         return showAlert('warning', '請輸入工具名稱', '');
                                     }
                                     await toolStore.add(record.tool);
-                                    showAlert('success', '儲存成功', `工具 "${record.tool}" 已新增！`);
+                                    showAlert('success', '儲存成功', `工具 "${ record.tool }" 已新增！`);
                                     setRecord({ tool: '' });
                                 }}
                                 sx={{
@@ -151,7 +151,7 @@ export default function CompanyAndTool() {
                                     '&:hover': { backgroundColor: '#1c27f9ff' },
                                 }}
                             >
-                                💾 儲存工具
+                                💾 儲存
                             </Button>
 
                             <Typography
@@ -169,7 +169,7 @@ export default function CompanyAndTool() {
                                     mt: 6,
                                 }}
                             >
-                                刪除工具
+                                🗑️刪除工具
                             </Typography>
 
                             <FormControl fullWidth>
@@ -195,7 +195,7 @@ export default function CompanyAndTool() {
                                 onClick={async (e) => {
                                     if (!selectedTool) return;
                                     const result = await Swal.fire({
-                                        title: `確定刪除工具 "${selectedTool}"？`,
+                                        title: `確定刪除工具 "${ selectedTool }"？`,
                                         icon: 'warning',
                                         showCancelButton: true,
                                         confirmButtonColor: '#d33',
@@ -206,7 +206,7 @@ export default function CompanyAndTool() {
                                     if (result.isConfirmed) {
                                         await toolStore.remove(selectedTool);
                                         setSelectedTool('');
-                                        showAlert('success', '刪除成功', `工具"${selectedTool}"已移除`);
+                                        showAlert('success', '刪除成功', `工具"${ selectedTool }"已移除`);
                                     }
                                 }}
                                 sx={{

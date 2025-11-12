@@ -23,7 +23,7 @@ export default function AllWorkReport() {
 
 
     const dirName = 'data';
-    const fileName = `${dirName}/DailyWorkReport.json`;
+    const fileName = `${ dirName }/DailyWorkReport.json`;
 
     // ✅ 讀取公司與工具
     const companyStore = useJsonStore('company.json');
@@ -65,7 +65,7 @@ export default function AllWorkReport() {
             );
 
             await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
-            showAlert('success', '更新成功', `✅ ${updatedRecord.date} 的工作日誌已更新！`);
+            showAlert('success', '更新成功', `✅ ${ updatedRecord.date } 的工作日誌已更新！`);
 
             const refreshedData = await handleLoadAll();
             handleSearch(refreshedData);
@@ -113,7 +113,7 @@ export default function AllWorkReport() {
     /** ✅ 共用 JSON 檔案讀取 Hook */
     function useJsonStore(fileName) {
         const [items, setItems] = useState([]);
-        const filePath = `${dirName}/${fileName}`;
+        const filePath = `${ dirName }/${ fileName }`;
 
         const load = async () => {
             try {
@@ -195,7 +195,7 @@ export default function AllWorkReport() {
         }
 
         const result = await Swal.fire({
-            title: `確定要刪除 ${pkList.length} 筆資料嗎？`,
+            title: `確定要刪除 ${ pkList.length } 筆資料嗎？`,
             text: '刪除後無法復原！',
             icon: 'warning',
             showCancelButton: true,
@@ -214,7 +214,7 @@ export default function AllWorkReport() {
 
             await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
 
-            Swal.fire('刪除成功', `🗑️ 已刪除 ${pkList.length} 筆資料`, 'success');
+            Swal.fire('刪除成功', `🗑️ 已刪除 ${ pkList.length } 筆資料`, 'success');
 
             const refreshedData = await handleLoadAll();
             handleSearch(refreshedData);
@@ -282,7 +282,7 @@ export default function AllWorkReport() {
                         color: '#333'
                     }}
                 >
-                    所有工作日誌報表
+                    📋所有工作日誌報表
                 </Typography>
             }
         >

@@ -18,6 +18,7 @@ const UtilsShadow = Loadable(lazy(() => import('views/utilities/Shadow')));
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 const DailyCostReport = Loadable(lazy(() => import('views/sample-page/DailyCostReport')));
 const Category = Loadable(lazy(() => import('views/sample-page/Category')));
+const Method = Loadable(lazy(() => import('views/sample-page/Method')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -61,6 +62,10 @@ const MainRoutes = {
     {
       path: 'category',
       element: <Category />
+    },
+    {
+      path: 'method',
+      element: <Method />
     }
   ]
 };
