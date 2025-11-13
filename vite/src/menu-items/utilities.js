@@ -30,7 +30,7 @@ const utilities = {
     },
     {
       id: 'util-allWorkReport',
-      title: '所有紀錄報表',
+      title: '所有工作紀錄',
       type: 'item',
       url: '/allWorkReport',
       icon: icons.IconReport,
@@ -38,7 +38,7 @@ const utilities = {
     },
     {
       id: 'util-company',
-      title: '公司設定',
+      title: '常用公司設定',
       type: 'item',
       url: '/company',
       icon: icons.IconBuilding,
@@ -46,7 +46,7 @@ const utilities = {
     },
     {
       id: 'util-tool',
-      title: '工具設定',
+      title: '常用工具設定',
       type: 'item',
       url: '/tool',
       icon: icons.IconTool,

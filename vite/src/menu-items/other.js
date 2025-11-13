@@ -1,8 +1,8 @@
 // assets
-import { IconBrandChrome, IconHelp, IconCategory2, IconCreditCard, IconMoneybag } from '@tabler/icons-react';
+import { IconBrandChrome, IconHelp, IconCategory2, IconCreditCard, IconMoneybag, IconReportMoney } from '@tabler/icons-react';
 
 // constant
-const icons = { IconBrandChrome, IconHelp, IconCategory2, IconCreditCard, IconMoneybag };
+const icons = { IconBrandChrome, IconHelp, IconCategory2, IconCreditCard, IconMoneybag, IconReportMoney };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -20,8 +20,16 @@ const other = {
       breadcrumbs: false
     },
     {
+      id: 'allCostReport',
+      title: '全部支出紀錄',
+      type: 'item',
+      url: '/allCostReport',
+      icon: icons.IconReportMoney,
+      breadcrumbs: false
+    },
+    {
       id: 'category',
-      title: '支出類型設定',
+      title: '支出類別設定',
       type: 'item',
       url: '/category',
       icon: icons.IconCategory2,

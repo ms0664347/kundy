@@ -15,6 +15,7 @@ import { gridSpacing } from 'store/constant';
 import 'dayjs/locale/zh-tw';
 import dayjs from 'dayjs';
 import { mkdir, readTextFile, writeTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import Swal from 'sweetalert2';
 // assets
 import StorefrontTwoToneIcon from '@mui/icons-material/StorefrontTwoTone';
 
@@ -24,6 +25,7 @@ export default function Dashboard() {
     const [isLoading, setLoading] = useState(true);
     const [date, setDate] = useState(dayjs());
     const [loadedData, setLoadedData] = useState([]);
+    const [loadedExpenseData, setLoadedExpenseData] = useState([]);
 
     // 📊 統計資料
     const [monthIncome, setMonthIncome] = useState(0);
@@ -36,9 +38,17 @@ export default function Dashboard() {
     const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY/MM'));
     const [currentYear, setCurrentYear] = useState(dayjs().format('YYYY'));
 
+    // 📉 支出統計
+    const [monthExpense, setMonthExpense] = useState(0);
+    const [monthExpenseDays, setMonthExpenseDays] = useState(0);
+    const [yearExpense, setYearExpense] = useState(0);
+    const [yearExpenseDays, setYearExpenseDays] = useState(0);
+    const [topExpense, setTopExpense] = useState({ category: '', total: 0 });
+
 
     const dirName = 'data';
     const fileName = `${dirName}/DailyWorkReport.json`;
+    const expenseFile = `${dirName}/DailyCostReport.json`;
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -56,10 +66,12 @@ export default function Dashboard() {
             await mkdir(dirName, { baseDir: BaseDirectory.AppData, recursive: true });
 
             let content = '';
+            let expenseContent = '';
 
             try {
                 // 🔹 嘗試讀取檔案
                 content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+                expenseContent = await readTextFile(expenseFile, { baseDir: BaseDirectory.AppData });
             } catch (err) {
                 // 🔹 捕捉多種情況（Windows / macOS / Linux）
                 const msg = String(err).toLowerCase();
@@ -70,9 +82,11 @@ export default function Dashboard() {
                     msg.includes('os error 2')
                 ) {
                     // ✅ 檔案不存在 → 自動建立空 JSON 檔案
-                    console.warn('📁 DailyWorkReport.json 不存在，正在建立空檔案...');
+                    console.warn('📁  檔案不存在，正在建立空檔案...');
                     await writeTextFile(fileName, '[]', { baseDir: BaseDirectory.AppData });
+                    await writeTextFile(expenseFile, '[]', { baseDir: BaseDirectory.AppData });
                     content = '[]';
+                    expenseContent = '[]';
                 } else {
                     throw err; // 其他錯誤往外拋
                 }
@@ -83,12 +97,23 @@ export default function Dashboard() {
                 return;
             }
 
+            if (!expenseContent || expenseContent.trim() === '') {
+                setLoadedExpenseData([]);
+                return;
+            }
+
             const jsonData = JSON.parse(content);
+            const expenseJsonData = JSON.parse(expenseContent);
+
             if (!Array.isArray(jsonData) || jsonData.length === 0) {
                 setLoadedData([]);
                 return;
             }
 
+            if (!Array.isArray(expenseJsonData) || expenseJsonData.length === 0) {
+                setLoadedExpenseData([]);
+                return;
+            }
 
             // ✅ 篩選本月資料（降冪排序）
             const now = dayjs();
@@ -103,11 +128,25 @@ export default function Dashboard() {
                     return dateB.diff(dateA);
                 });
 
+            const filteredExpenseData = expenseJsonData
+                .filter((item) => item.date && item.date.startsWith(currentMonth))
+                .sort((a, b) => {
+                    const dateA = dayjs(a.date, 'YYYY/MM/DD');
+                    const dateB = dayjs(b.date, 'YYYY/MM/DD');
+                    return dateB.diff(dateA);
+                })
+
             // ✅ 1. 本月總收入（含加班）
             const monthTotal = filteredData.reduce((sum, item) => {
                 const amount = Number(item.amount) || 0;
                 const overtime = Number(item.overtimePay) || 0;
                 return sum + amount + overtime;
+            }, 0);
+
+            // ✅ 1-1本月總支出
+            const monthExpenseTotal = filteredExpenseData.reduce((sum, item) => {
+                const amount = Number(item.amount) || 0;
+                return sum + amount;
             }, 0);
 
             // ✅ 2. 年度總收入（含加班）
@@ -118,6 +157,13 @@ export default function Dashboard() {
                 return sum + amount + overtime;
             }, 0);
 
+            // ✅ 2-1年度總支出
+            const yearExpenseData = expenseJsonData.filter((item) => item.date && item.date.startsWith(currentYear));
+            const yearExpenseTotal = yearExpenseData.reduce((sum, item) => {
+                const amount = Number(item.amount) || 0;
+                return sum + amount;
+            }, 0);
+
             // ✅ 3. 本月最常使用工具
             const toolCount = {};
             filteredData.forEach((item) => {
@@ -125,6 +171,21 @@ export default function Dashboard() {
                 toolCount[tool] = (toolCount[tool] || 0) + 1;
             });
             const topToolEntry = Object.entries(toolCount).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+
+            // ✅ 3-1 本月支出金額最高的類別
+            const expenseTypeSum = {}; // 類別 → 總金額
+            filteredExpenseData.forEach((item) => {
+                const category = item.category || '未填寫';
+                const amount = Number(item.amount) || 0;
+                expenseTypeSum[category] = (expenseTypeSum[category] || 0) + amount;
+            });
+
+            // ✅ 找出金額最高的類別
+            const topExpenseTypeEntry =
+                Object.entries(expenseTypeSum).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+
+            const [topExpenseCategory, topExpenseAmount] = topExpenseTypeEntry;
+
 
             // ✅ 4. 今年收入最高的公司
             const companySum = {};
@@ -141,6 +202,9 @@ export default function Dashboard() {
             // ✅ 5. 本月工作天數（以日期不重複計算）
             const uniqueDays = new Set(filteredData.map(item => item.date)).size;
 
+            // 5-1. 本月總支出天數
+            const uniqueExpenseDays = new Set(filteredExpenseData.map(item => item.date)).size;
+
             // ✅ 6. 本月總天數
             const totalDaysInMonth = now.daysInMonth(); // ✅ 例如 11 月會是 30
 
@@ -151,6 +215,9 @@ export default function Dashboard() {
                     .map((item) => item.date)
             ).size;
 
+            // 7-1. 今年總支出天數
+            const yearExpenseDays = new Set(yearExpenseData.map((item) => item.date)).size;
+
 
             // ✅ 存入 state
             setMonthIncome(monthTotal);
@@ -160,6 +227,16 @@ export default function Dashboard() {
             setMonthWorkDays(uniqueDays); // ✅ 新增
             setTotalDaysInMonth(totalDaysInMonth);
             setYearWorkDays(yearWorkDays);
+
+            setMonthExpense(monthExpenseTotal);
+            setMonthExpenseDays(uniqueExpenseDays);
+            setYearExpense(yearExpenseTotal);
+            setYearExpenseDays(yearExpenseDays);
+            setTopExpense({
+                category: topExpenseCategory,
+                total: topExpenseAmount
+            });
+
 
             setLoadedData(jsonData);
         } catch (err) {
@@ -180,33 +257,38 @@ export default function Dashboard() {
         <Grid container spacing={gridSpacing}>
             <Grid size={12}>
                 <Grid container spacing={gridSpacing}>
-                    <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
+                    <Grid size={{ lg: 6, md: 6, sm: 6, xs: 12 }}>
                         <EarningCard
                             isLoading={isLoading}
                             monthIncome={monthIncome}
                             monthWorkDays={monthWorkDays}
+                            monthExpense={monthExpense}
+                            monthExpenseDays={monthExpenseDays}
                             totalDaysInMonth={totalDaysInMonth}
                             currentMonth={currentMonth}
                         />
                     </Grid>
-                    <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
+                    <Grid size={{ lg: 6, md: 6, sm: 6, xs: 12 }}>
                         <TotalOrderLineChartCard
                             isLoading={isLoading}
                             yearIncome={yearIncome}
                             yearWorkDays={yearWorkDays}
+                            yearExpense={yearExpense}
+                            yearExpenseDays={yearExpenseDays}
                             currentYear={currentYear}
                         />
                     </Grid>
-                    <Grid size={{ lg: 4, md: 12, sm: 12, xs: 12 }}>
+                    <Grid size={{ lg: 12, md: 12, sm: 12, xs: 12 }}>
                         <Grid container spacing={gridSpacing}>
-                            <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
+                            <Grid size={{ sm: 6, xs: 12, md: 6, lg: 6 }}>
                                 <TotalIncomeDarkCard
                                     isLoading={isLoading}
                                     topTool={topTool}
                                     currentMonth={currentMonth}
+                                    topExpense={topExpense}
                                 />
                             </Grid>
-                            <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
+                            <Grid size={{ sm: 6, xs: 12, md: 6, lg: 6 }}>
                                 <TotalIncomeLightCard
                                     isLoading={isLoading}
                                     topCompany={topCompany}

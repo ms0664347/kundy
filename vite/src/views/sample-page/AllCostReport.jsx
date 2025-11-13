@@ -9,11 +9,11 @@ import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 import { readTextFile, writeTextFile, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
 import Swal from 'sweetalert2';
-import WorkReportTable from '../../ui-component/workReport/WorkReportTable';
 import dayjs from 'dayjs';
-import WorkReportForm from '../../ui-component/workReport/WorkReportForm';
+import CostReportForm from '../../ui-component/costReport/CostReportForm';
+import CostReportTable from '../../ui-component/costReport/CostReportTable';
 
-export default function AllWorkReport() {
+export default function AllCostReport() {
     const [loadedData, setLoadedData] = useState([]);
     const [allData, setAllData] = useState([]);
     const [openModal, setOpenModal] = useState(false);
@@ -23,21 +23,19 @@ export default function AllWorkReport() {
 
 
     const dirName = 'data';
-    const fileName = `${dirName}/DailyWorkReport.json`;
+    const fileName = `${dirName}/DailyCostReport.json`;
 
     // ✅ 讀取公司與工具
-    const companyStore = useJsonStore('company.json');
-    const toolStore = useJsonStore('tool.json');
+    const categoryStore = useJsonStore('category.json');
+    const methodStore = useJsonStore('method.json');
 
     // ✅ 點擊「編輯」按鈕
     const handleEdit = (item) => {
         setEditForm({
-            company: item.company || '',
-            tool: item.tool || '',
+            category: item.category || '',
+            method: item.method || '',
             location: item.location || '',
             amount: item.amount || '',
-            overtimePay: item.overtimePay || '',
-            tax: item.tax || 3,
             note: item.note || '',
             date: dayjs(item.date, 'YYYY/MM/DD'),
             pkno: item.pkno,
@@ -81,8 +79,8 @@ export default function AllWorkReport() {
     const [filters, setFilters] = useState({
         year: '',
         month: '',
-        company: '',
-        tool: '',
+        category: '',
+        method: '',
         keyword: ''
     });
 
@@ -98,7 +96,7 @@ export default function AllWorkReport() {
 
     // ✅ 重置篩選條件
     const handleReset = () => {
-        setFilters({ year: '', month: '', company: '', tool: '', keyword: '' });
+        setFilters({ year: '', month: '', category: '', method: '', keyword: '' });
         setLoadedData(allData);
     };
 
@@ -132,7 +130,7 @@ export default function AllWorkReport() {
         return { items };
     }
 
-    // ✅ 讀取所有 DailyWorkReport
+    // ✅ 讀取所有 DailyCostReport
     const handleLoadAll = async () => {
         try {
             // 🔹 確保資料夾存在
@@ -152,7 +150,7 @@ export default function AllWorkReport() {
                     msg.includes('failed to open file') ||
                     msg.includes('os error 2')
                 ) {
-                    console.warn('📁 DailyWorkReport.json 不存在，正在建立空檔案...');
+                    console.warn('📁 DailyCostReport.json 不存在，正在建立空檔案...');
                     await writeTextFile(fileName, '[]', { baseDir: BaseDirectory.AppData });
                     content = '[]';
                 } else {
@@ -233,21 +231,21 @@ export default function AllWorkReport() {
         const baseData = Array.isArray(data) ? data : allData;
         let filtered = [...baseData];
 
-        const { year, month, company, tool, keyword } = filters;
+        const { year, month, category, method, keyword } = filters;
 
         if (year)
             filtered = filtered.filter((item) => item.date?.startsWith(year));
         if (month)
             filtered = filtered.filter((item) => item.date?.split('/')[1] === month);
-        if (company)
-            filtered = filtered.filter((item) => item.company === company);
-        if (tool)
-            filtered = filtered.filter((item) => item.tool === tool);
+        if (category)
+            filtered = filtered.filter((item) => item.category === category);
+        if (method)
+            filtered = filtered.filter((item) => item.method === method);
 
         if (keyword) {
             const kw = keyword.toLowerCase();
             filtered = filtered.filter((item) =>
-                [item.note, item.company, item.tool, item.location]
+                [item.note, item.category, item.method, item.location]
                     .filter(Boolean)
                     .some((v) => v.toLowerCase().includes(kw))
             );
@@ -282,7 +280,7 @@ export default function AllWorkReport() {
                         color: '#333'
                     }}
                 >
-                    📋所有工作日誌報表
+                    📋所有支出報表
                 </Typography>
             }
         >
@@ -331,16 +329,16 @@ export default function AllWorkReport() {
                     </Select>
                 </FormControl>
 
-                {/* 公司 */}
+                {/* 類別 */}
                 <FormControl sx={{ minWidth: 150 }}>
-                    <InputLabel>公司</InputLabel>
+                    <InputLabel>類別</InputLabel>
                     <Select
-                        value={filters.company}
-                        label="公司"
-                        onChange={(e) => setFilters({ ...filters, company: e.target.value })}
+                        value={filters.category}
+                        label="類別"
+                        onChange={(e) => setFilters({ ...filters, category: e.target.value })}
                     >
                         <MenuItem value="">全部</MenuItem>
-                        {companyStore.items.map((name, index) => (
+                        {categoryStore.items.map((name, index) => (
                             <MenuItem key={index} value={name}>
                                 {name}
                             </MenuItem>
@@ -348,16 +346,16 @@ export default function AllWorkReport() {
                     </Select>
                 </FormControl>
 
-                {/* 工具 */}
+                {/* 支出方式 */}
                 <FormControl sx={{ minWidth: 150 }}>
-                    <InputLabel>工具</InputLabel>
+                    <InputLabel>支出方式</InputLabel>
                     <Select
-                        value={filters.tool}
-                        label="工具"
-                        onChange={(e) => setFilters({ ...filters, tool: e.target.value })}
+                        value={filters.method}
+                        label="支出方式"
+                        onChange={(e) => setFilters({ ...filters, method: e.target.value })}
                     >
                         <MenuItem value="">全部</MenuItem>
-                        {toolStore.items.map((name, index) => (
+                        {methodStore.items.map((name, index) => (
                             <MenuItem key={index} value={name}>
                                 {name}
                             </MenuItem>
@@ -432,8 +430,8 @@ export default function AllWorkReport() {
                     borderRadius: '8px',
                 }}
             >
-                <Box sx={{ minWidth: '1450px' }}> {/* 👈 強制表格寬度超過容器 */}
-                    <WorkReportTable
+                <Box sx={{ minWidth: '1200px' }}> {/* 👈 強制表格寬度超過容器 */}
+                    <CostReportTable
                         title=""
                         loadedData={loadedData || []}
                         onEdit={(item) => handleEdit(item)}
@@ -448,7 +446,7 @@ export default function AllWorkReport() {
             <Dialog open={openModal} onClose={handleModalClose} fullWidth maxWidth="sm">
                 <DialogContent>
                     {editForm && (
-                        <WorkReportForm
+                        <CostReportForm
                             record={{
                                 location: editForm.location,
                                 amount: editForm.amount,
@@ -457,14 +455,14 @@ export default function AllWorkReport() {
                                 note: editForm.note,
                             }}
                             setRecord={(newData) => setEditForm({ ...editForm, ...newData })}
-                            selectedCompany={editForm.company}
-                            setSelectedCompany={(val) => setEditForm({ ...editForm, company: val })}
-                            selectedTool={editForm.tool}
-                            setSelectedTool={(val) => setEditForm({ ...editForm, tool: val })}
+                            selectedCategory={editForm.category}
+                            setSelectedCategory={(val) => setEditForm({ ...editForm, category: val })}
+                            selectedMethod={editForm.method}
+                            setSelectedMethod={(val) => setEditForm({ ...editForm, method: val })}
                             date={dayjs(editForm.date)}   // ← 確保永遠轉成 dayjs 物件
                             setDate={(val) => setEditForm({ ...editForm, date: val })}
-                            companyStore={companyStore}
-                            toolStore={toolStore}
+                            categoryStore={categoryStore}
+                            methodStore={methodStore}
                             isEditing={true}
                             onSave={() => handleSaveEdit(editForm)}
                             onCancelEdit={handleModalClose}

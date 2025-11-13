@@ -7,13 +7,22 @@ import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import TimelineTwoToneIcon from '@mui/icons-material/TimelineTwoTone';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
 
-export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWorkDays, currentYear }) {
+export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWorkDays, yearExpense, yearExpenseDays, currentYear }) {
     const theme = useTheme();
+
+    const [mode, setMode] = React.useState('income'); // 預設顯示收入
+
+    // 根據 mode 切換顯示內容
+    const displayAmount = mode === 'income' ? yearIncome : yearExpense;
+    const displayDays = mode === 'income' ? yearWorkDays : yearExpenseDays;
+    const labelText = mode === 'income' ? '收入' : '支出';
+    const color = mode === 'income' ? '#55f458ff' : '#fac472ff'; // 收入→綠, 支出→橘
 
     return (
         <>
@@ -72,33 +81,68 @@ export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWor
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'center',
+                                    justifyContent: 'space-between', // ← 左右兩邊分開
                                     gap: 2,
                                     [theme.breakpoints.up('lg')]: {
                                         mb: 3 // 標題與內容間距變大
                                     }
                                 }}
                             >
-                                <TimelineTwoToneIcon
-                                    sx={{
-                                        color: '#fff',
-                                        fontSize: '1.6rem',
-                                        [theme.breakpoints.up('lg')]: {
-                                            fontSize: '3rem' // 大螢幕放大圖示
-                                        }
+                                {/* ✅ 左邊包一層 */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <TimelineTwoToneIcon
+                                        sx={{
+                                            color: '#fff',
+                                            fontSize: '1.6rem',
+                                            [theme.breakpoints.up('lg')]: {
+                                                fontSize: '3rem' // 大螢幕放大圖示
+                                            }
+                                        }}
+                                    />
+                                    <Typography
+                                        sx={{
+                                            fontSize: '1.25rem',
+                                            fontWeight: 500,
+                                            color: '#fff',
+                                            [theme.breakpoints.up('lg')]: {
+                                                fontSize: '1.5rem' // 大螢幕放大文字
+                                            }
+                                        }}
+                                    >
+                                        今年 ({currentYear}年)
+                                    </Typography>
+                                </Box>
+                                {/* 右上角切換按鈕 */}
+                                <ToggleButtonGroup
+                                    color="primary"
+                                    exclusive
+                                    value={mode}
+                                    justify="right"
+                                    onChange={(e, newMode) => {
+                                        if (newMode !== null) setMode(newMode);
                                     }}
-                                />
-                                <Typography
                                     sx={{
-                                        fontSize: '1.125rem',
-                                        fontWeight: 500,
-                                        color: '#fff',
-                                        [theme.breakpoints.up('lg')]: {
-                                            fontSize: '1.5rem' // 大螢幕放大文字
-                                        }
+                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        borderRadius: 2,
+                                        '& .MuiToggleButton-root': {
+                                            color: '#fff',
+                                            border: 'none',
+                                            fontWeight: 'bold',
+                                            fontSize: '1rem',
+                                            px: 2,
+                                            '&.Mui-selected': {
+                                                backgroundColor: '#ffffff78',
+                                                color: '#fff',
+                                            },
+                                            '&:hover': {
+                                                backgroundColor: '#ffffff33',
+                                            },
+                                        },
                                     }}
                                 >
-                                    今年 ({currentYear}年)
-                                </Typography>
+                                    <ToggleButton value="income">收入</ToggleButton>
+                                    <ToggleButton value="expense">支出</ToggleButton>
+                                </ToggleButtonGroup>
                             </Box>
 
                             {/* 收入與天數 */}
@@ -115,37 +159,62 @@ export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWor
                                         }
                                     }}
                                 >
-                                    {/* 收入金額 */}
-                                    <Grid>
+                                    {/* 顯示金額（含動畫） */}
+                                    {/* 內容區塊 */}
+                                    <Box
+                                        key={mode}
+                                        sx={{
+                                            p: 2,
+                                            color: '#fff',
+                                            animation: 'fadeInScale 0.5s ease forwards',
+                                            '@keyframes fadeInScale': {
+                                                '0%': { opacity: 0, transform: 'scale(0.95)' },
+                                                '100%': { opacity: 1, transform: 'scale(1)' }
+                                            },
+                                            display: 'flex',           // ✅ 同一行排列
+                                            alignItems: 'baseline',    // ✅ 對齊底線（讓字漂亮對齊）
+                                            gap: 1                     // ✅ 兩者間距
+                                        }}
+                                    >
                                         <Typography
+                                            key={mode} // 👈 強制 React 重新渲染以觸發動畫
                                             sx={{
                                                 fontSize: '1.6rem',
-                                                fontWeight: 600,
-                                                color: '#fff',
-                                                [theme.breakpoints.up('lg')]: {
-                                                    fontSize: '2rem'
+                                                fontWeight: 700,
+                                                color,
+                                                opacity: 0,
+                                                transform: 'scale(0.9)',
+                                                animation: 'fadeInScale 0.6s ease forwards', // 👈 呼叫動畫
+                                                [theme.breakpoints.up('lg')]: { fontSize: '2.2rem' },
+                                                '@keyframes fadeInScale': {
+                                                    '0%': { opacity: 0, transform: 'scale(0.9)' },
+                                                    '50%': { opacity: 0.5, transform: 'scale(1.05)' },
+                                                    '100%': { opacity: 1, transform: 'scale(1)' }
                                                 }
                                             }}
                                         >
-                                            收入：${yearIncome?.toLocaleString() || '0.00'}
+                                            {labelText}：${displayAmount?.toLocaleString() || '0.00'}
                                         </Typography>
-                                    </Grid>
 
-                                    {/* 工作天數 */}
-                                    <Grid>
+                                        {/* 顯示天數（含動畫） */}
                                         <Typography
+                                            key={mode + '-days'}
                                             sx={{
-                                                fontSize: '1.4rem',
+                                                fontSize: '1.25rem',
                                                 color: '#e0e0e0',
                                                 fontWeight: 400,
-                                                [theme.breakpoints.up('lg')]: {
-                                                    fontSize: '1.6rem'
+                                                opacity: 0,
+                                                animation: 'fadeIn 0.6s ease forwards',
+                                                [theme.breakpoints.up('lg')]: { fontSize: '1.6rem' },
+                                                '@keyframes fadeIn': {
+                                                    '0%': { opacity: 0 },
+                                                    '100%': { opacity: 1 }
                                                 }
                                             }}
                                         >
-                                            ({yearWorkDays}/365天)
+                                            ({displayDays}/{365} 天)
                                         </Typography>
-                                    </Grid>
+                                    </Box>
                                 </Grid>
                             </Grid>
                         </Grid>

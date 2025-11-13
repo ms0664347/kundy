@@ -15,7 +15,7 @@ import {
 import SubCard from 'ui-component/cards/SubCard';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
-export default function WorkReportTable({
+export default function CostReportTable({
     title = '',
     loadedData = [],
     onEdit,
@@ -55,6 +55,7 @@ export default function WorkReportTable({
         dateGroup[item.date]++;
     });
 
+
     // ✅ 是否全選當前頁
     const isAllSelected =
         paginatedData.length > 0 && paginatedData.every((row) => selected.includes(row.pkno));
@@ -91,24 +92,17 @@ export default function WorkReportTable({
             ? safeData.reduce(
                 (acc, item) => {
                     const amount = Math.round(parseFloat(item.amount) || 0);
-                    const overtimePay = Math.round(parseFloat(item.overtimePay) || 0);
-                    const taxRate = Math.round(parseFloat(item.tax) || 0);
-                    const subtotal = amount + overtimePay;
-                    const total = Math.round(subtotal * (1 + taxRate / 100));
-                    const taxValue = total - subtotal;
 
                     // ✅ 只在第一次出現該日期時 +1
                     if (!seenDates.has(item.date)) {
                         seenDates.add(item.date);
                         acc.days += 1;
                     }
+
                     acc.totalAmount += amount;
-                    acc.totalOvertime += overtimePay;
-                    acc.totalTax += taxValue;
-                    acc.totalFinal += total;
                     return acc;
                 },
-                { days: 0, totalAmount: 0, totalOvertime: 0, totalTax: 0, totalFinal: 0 }
+                { days: 0, totalAmount: 0 }
             )
             : null;
 
@@ -137,7 +131,6 @@ export default function WorkReportTable({
                 </Typography>
             }
         >
-            {/* ✅ 顯示總筆數 / 分頁資訊 */}
             {/* ✅ 顯示總筆數 / 分頁資訊 */}
             <Box
                 sx={{
@@ -172,6 +165,7 @@ export default function WorkReportTable({
                     </Select>
                 </FormControl>
             </Box>
+
 
             {/* 📋 資料表格 */}
             {safeData.length === 0 ? (
@@ -210,12 +204,12 @@ export default function WorkReportTable({
                     >
                         <TableHead >
                             <TableRow >
-                                {/* ✅ 新增全選 checkbox */}
                                 <TableCell>
                                     <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                         #
                                     </Typography>
                                 </TableCell>
+                                {/* ✅ 新增全選 checkbox */}
                                 <TableCell >
                                     <Checkbox
                                         checked={isAllSelected}
@@ -229,12 +223,12 @@ export default function WorkReportTable({
                                 </TableCell>
                                 <TableCell>
                                     <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        🏢 公司
+                                        🏷️ 類別
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
                                     <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        🛠 工具
+                                        💳 支付方式
                                     </Typography>
                                 </TableCell>
                                 <TableCell>
@@ -254,21 +248,6 @@ export default function WorkReportTable({
                                 </TableCell>
                                 <TableCell>
                                     <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        ⏰ 加班費
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        🧾 稅金 (%)
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        💵 含稅總金額
-                                    </Typography>
-                                </TableCell>
-                                <TableCell>
-                                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                         ⚙️ 操作
                                     </Typography>
                                 </TableCell>
@@ -278,11 +257,6 @@ export default function WorkReportTable({
                         <TableBody>
                             {paginatedData.map((item, index) => {
                                 const amount = Math.round(parseFloat(item.amount) || 0);
-                                const overtimePay = Math.round(parseFloat(item.overtimePay) || 0);
-                                const taxRate = Math.round(parseFloat(item.tax) || 0);
-                                const subtotal = amount + overtimePay;
-                                const total = Math.round(subtotal * (1 + taxRate / 100));
-                                const taxValue = total - subtotal;
 
                                 // ✅ 判斷是否為該日期的第一筆（用 paginatedData 的 index 找前一筆）
                                 const isFirstOfDate =
@@ -310,25 +284,11 @@ export default function WorkReportTable({
                                                 {item.date}
                                             </TableCell>
                                         )}
-                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.company || '—'}</TableCell>
-                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.tool || '—'}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.category || '—'}</TableCell>
+                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.method || '—'}</TableCell>
                                         <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.location || '—'}</TableCell>
                                         <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{item.note || '—'}</TableCell>
                                         <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{amount.toLocaleString()}</TableCell>
-                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>{overtimePay.toLocaleString()}</TableCell>
-                                        <TableCell sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                            {taxRate}%<br />
-                                            <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
-                                                +{taxValue.toLocaleString()}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', color: '#1976d2', fontSize: { xs: '1.2rem', sm: '1.4rem' } }}>
-                                            {total.toLocaleString()}
-                                            <br />
-                                            <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
-                                                = {subtotal.toLocaleString()} + {taxValue.toLocaleString()}
-                                            </Typography>
-                                        </TableCell>
                                         <TableCell>
                                             <Stack direction="row" spacing={1} justifyContent="center">
                                                 {/* 編輯按鈕 */}
@@ -386,21 +346,13 @@ export default function WorkReportTable({
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    <TableCell>—</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>📊 合計</TableCell>
+                                    <TableCell>—</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>{summary.days} 天</TableCell>
-                                    <TableCell colSpan={4}>—</TableCell>
+                                    <TableCell colSpan={3}>—</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}></TableCell>
                                     <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
                                         {summary.totalAmount.toLocaleString()}
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        {summary.totalOvertime.toLocaleString()}
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        {summary.totalTax.toLocaleString()}
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#1976d2', fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-                                        {summary.totalFinal.toLocaleString()}
                                     </TableCell>
                                     <TableCell />
                                 </TableRow>

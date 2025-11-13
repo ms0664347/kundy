@@ -1,7 +1,7 @@
 // material-ui
 import Grid from '@mui/material/Grid2';
 import { Typography, Box } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 import { writeTextFile, readTextFile, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs';
@@ -11,32 +11,31 @@ import 'dayjs/locale/zh-tw';
 import { v4 as uuidv4 } from 'uuid';
 
 // 自訂 components
-import CostReportForm from '../../ui-component/workReport/CostReportForm';
-import WorkReportTable from '../../ui-component/workReport/WorkReportTable';
+import CostReportForm from '../../ui-component/costReport/CostReportForm';
+import CostReportTable from '../../ui-component/costReport/CostReportTable';
 
 
-export default function DailyWorkReport() {
+export default function DailyCostReport() {
     const [record, setRecord] = useState({
         location: '',
         amount: '',
-        overtimePay: '',
-        tax: 3,
         note: ''
     });
 
     const [date, setDate] = useState(dayjs());
     const [loadedData, setLoadedData] = useState([]);
-    const [selectedCompany, setSelectedCompany] = useState('');
-    const [selectedTool, setSelectedTool] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedMethod, setSelectedMethod] = useState('');
     const [editPkno, setEditPkno] = useState(null); // ✅ 新增：記錄目前正在編輯的 pkno
     const [isEditing, setIsEditing] = useState(false); // ✅ 新增：是否為編輯模式
     const [resetKey, setResetKey] = useState(0);
+    const formRef = useRef(null); // 👈 新增 Ref
 
     const dirName = 'data';
-    const fileName = `${ dirName }/DailyCostReport.json`;
+    const fileName = `${dirName}/DailyCostReport.json`;
 
-    const companyStore = useJsonStore('company.json');
-    const toolStore = useJsonStore('tool.json');
+    const categoryStore = useJsonStore('category.json');
+    const methodStore = useJsonStore('method.json');
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -50,7 +49,7 @@ export default function DailyWorkReport() {
     // JSON 檔案通用讀取
     function useJsonStore(fileName) {
         const [items, setItems] = useState([]);
-        const filePath = `${ dirName }/${ fileName }`;
+        const filePath = `${dirName}/${fileName}`;
 
         const load = async () => {
             try {
@@ -85,12 +84,10 @@ export default function DailyWorkReport() {
                     item.pkno === editPkno
                         ? {
                             ...item,
-                            company: selectedCompany,
-                            tool: selectedTool,
+                            category: selectedCategory,
+                            method: selectedMethod,
                             location: record.location,
                             amount: record.amount,
-                            tax: record.tax,
-                            overtimePay: record.overtimePay,
                             note: record.note,
                             date: date ? date.format('YYYY/MM/DD') : ''
                         }
@@ -100,12 +97,10 @@ export default function DailyWorkReport() {
                 // ✅ 新增模式
                 const newRecord = {
                     pkno: uuidv4(),
-                    company: selectedCompany,
-                    tool: selectedTool,
+                    category: selectedCategory,
+                    method: selectedMethod,
                     location: record.location,
                     amount: record.amount,
-                    tax: record.tax,
-                    overtimePay: record.overtimePay,
                     note: record.note,
                     date: date ? date.format('YYYY/MM/DD') : ''
                 };
@@ -115,7 +110,7 @@ export default function DailyWorkReport() {
             await writeTextFile(fileName, JSON.stringify(newRecords, null, 2), { baseDir: BaseDirectory.AppData });
 
             showAlert('success', isEditing ? '更新成功' : '儲存成功',
-                isEditing ? '✅ 該筆資料已更新！' : '✅ 已成功儲存工作紀錄！');
+                isEditing ? '✅ 該筆資料已更新！' : '✅ 已成功儲存支出紀錄！');
 
             // ✅ 重置狀態
             setIsEditing(false);
@@ -200,7 +195,7 @@ export default function DailyWorkReport() {
         }
 
         const result = await Swal.fire({
-            title: `確定要刪除 ${ pkList.length } 筆資料嗎？`,
+            title: `確定要刪除 ${pkList.length} 筆資料嗎？`,
             text: '刪除後無法復原！',
             icon: 'warning',
             showCancelButton: true,
@@ -219,7 +214,7 @@ export default function DailyWorkReport() {
 
             await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
 
-            Swal.fire('刪除成功', `🗑️ 已刪除 ${ pkList.length } 筆資料`, 'success');
+            Swal.fire('刪除成功', `🗑️ 已刪除 ${pkList.length} 筆資料`, 'success');
 
             handleLoad();
             // ✅ 通知子層清空勾選
@@ -235,23 +230,52 @@ export default function DailyWorkReport() {
     const handleEdit = (item) => {
         setIsEditing(true);
         setEditPkno(item.pkno);
-        setSelectedCompany(item.company || '');
-        setSelectedTool(item.tool || '');
+        setSelectedCategory(item.category || '');
+        setSelectedMethod(item.method || '');
         setRecord({
             location: item.location || '',
             amount: item.amount || '',
-            overtimePay: item.overtimePay || '',
-            tax: item.tax || 3,
             note: item.note || ''
         });
         setDate(dayjs(item.date, 'YYYY/MM/DD'));
+
+        // ✅ 加上更慢的滑動動畫
+        setTimeout(() => {
+            const target = formRef.current;
+            if (!target) return;
+
+            const targetY = target.getBoundingClientRect().top + window.scrollY - 100; // 調整偏移
+            const startY = window.scrollY;
+            const distance = targetY - startY;
+            const duration = 1000; // 🕒 動畫時間（毫秒）→ 想更慢可改 1500~2000
+            const startTime = performance.now();
+
+            function smoothScrollStep(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeInOut = progress < 0.5
+                    ? 2 * progress * progress
+                    : -1 + (4 - 2 * progress) * progress; // 緩入緩出
+
+                window.scrollTo(0, startY + distance * easeInOut);
+
+                if (progress < 1) requestAnimationFrame(smoothScrollStep);
+                else {
+                    // ✅ 最後 focus 到第一個 input
+                    const firstInput = target.querySelector('input, textarea, select');
+                    if (firstInput) firstInput.focus();
+                }
+            }
+
+            requestAnimationFrame(smoothScrollStep);
+        }, 100);
     };
 
     // ✅ 重置表單與狀態
     const resetForm = () => {
-        setRecord({ location: '', amount: '', overtimePay: '', tax: 5, note: '' });
-        setSelectedCompany('');
-        setSelectedTool('');
+        setRecord({ location: '', amount: '', note: '' });
+        setSelectedCategory('');
+        setSelectedMethod('');
         setDate(dayjs());
         setIsEditing(false);
         setEditPkno(null);
@@ -277,20 +301,20 @@ export default function DailyWorkReport() {
             }
         >
             <Grid container spacing={gridSpacing}>
-                <Grid size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }} ref={formRef}>
                     <CostReportForm
                         record={record}
                         setRecord={setRecord}
-                        selectedCompany={selectedCompany}
-                        setSelectedCompany={setSelectedCompany}
-                        selectedTool={selectedTool}
-                        setSelectedTool={setSelectedTool}
+                        selectedCategory={selectedCategory}
+                        setSelectedCategory={setSelectedCategory}
+                        selectedMethod={selectedMethod}
+                        setSelectedMethod={setSelectedMethod}
                         date={date}
                         setDate={setDate}
                         onSave={handleSave}
                         onLoad={handleLoad}
-                        companyStore={companyStore}
-                        toolStore={toolStore}
+                        categoryStore={categoryStore}
+                        methodStore={methodStore}
                         isEditing={isEditing} // ✅ 傳給 form 用來切換「更新」或「儲存」
                         onCancelEdit={resetForm}
                     />
@@ -306,8 +330,8 @@ export default function DailyWorkReport() {
                     }}
                 >
                     <Box sx={{ minWidth: '1200px' }}> {/* 👈 強制表格寬度超過容器 */}
-                        <WorkReportTable
-                            title="本月工作日誌列表"
+                        <CostReportTable
+                            title="本月支出列表"
                             loadedData={loadedData}
                             onEdit={(item) => handleEdit(item)}
                             onDelete={(pkList) => handleDelete(pkList)}   // ✅ 直接傳回原樣

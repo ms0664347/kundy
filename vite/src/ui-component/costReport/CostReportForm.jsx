@@ -9,13 +9,12 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import SubCard from 'ui-component/cards/SubCard';
 
-export default function WorkReportForm({
+export default function CostReportForm({
     record, setRecord,
-    selectedCompany, setSelectedCompany,
-    selectedTool, setSelectedTool,
+    selectedCategory, setSelectedCategory,
+    selectedMethod, setSelectedMethod,
     date, setDate,
-    onSave, onLoad,
-    companyStore, toolStore,
+    onSave, categoryStore, methodStore,
     isEditing, onCancelEdit
 }) {
     const handleChange = (e) => {
@@ -43,28 +42,28 @@ export default function WorkReportForm({
                 </LocalizationProvider>
 
                 <FormControl fullWidth>
-                    <InputLabel id="company-select-label">公司名稱</InputLabel>
+                    <InputLabel id="company-select-label">類別</InputLabel>
                     <Select
                         labelId="company-select-label"
-                        value={selectedCompany}
-                        label="公司名稱"
-                        onChange={(e) => setSelectedCompany(e.target.value)}
+                        value={selectedCategory || ''}
+                        label="類別"
+                        onChange={(e) => setSelectedCategory(e.target.value)}
                     >
-                        {(companyStore.items || []).map((name, index) => (
+                        {(categoryStore.items || []).map((name, index) => (
                             <MenuItem key={index} value={name}>{name}</MenuItem>
                         ))}
                     </Select>
                 </FormControl>
 
                 <FormControl fullWidth>
-                    <InputLabel id="tool-select-label">工具名稱</InputLabel>
+                    <InputLabel id="tool-select-label">支出方式(信用卡、現金....)</InputLabel>
                     <Select
                         labelId="tool-select-label"
-                        value={selectedTool}
-                        label="工具名稱"
-                        onChange={(e) => setSelectedTool(e.target.value)}
+                        value={selectedMethod || ''}
+                        label="支出方式(信用卡、現金....)"
+                        onChange={(e) => setSelectedMethod(e.target.value)}
                     >
-                        {(toolStore.items || []).map((name, index) => (
+                        {(methodStore.items || []).map((name, index) => (
                             <MenuItem key={index} value={name}>{name}</MenuItem>
                         ))}
                     </Select>
@@ -72,61 +71,13 @@ export default function WorkReportForm({
 
                 <TextField label="地點" name="location" value={record.location} onChange={handleChange} fullWidth />
 
-                <Grid container direction="row" spacing={2}>
-                    <Grid size={{ xs: 6 }}>
-                        {/* 💰 金額 */}
-                        <TextField
-                            label="金額"
-                            name="amount"
-                            type="number"
-                            fullWidth
-                            value={record.amount || ''}
-                            inputProps={{
-                                min: 1,
-                                step: 1,
-                                inputMode: 'numeric',
-                                pattern: '[0-9]*'
-                            }}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === '' || /^[1-9]\d*$/.test(val)) {
-                                    handleChange(e);
-                                }
-                            }}
-                        />
-                    </Grid>
-                    <Grid size={{ xs: 6 }}>
-                        {/* 🧾 稅金 (%)：允許小數（最多一位或兩位） */}
-                        <TextField
-                            label="稅金 (%)"
-                            name="tax"
-                            type="number"
-                            fullWidth
-                            value={record.tax || ''}
-                            inputProps={{
-                                min: 0,
-                                max: 100,
-                                step: 0.01, // ✅ 小數精度
-                                inputMode: 'decimal',
-                            }}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                // ✅ 允許正數且最多兩位小數
-                                if (val === '' || (/^(?:\d+|\d*\.\d{0,2})$/.test(val) && parseFloat(val) >= 0 && parseFloat(val) <= 100)) {
-                                    handleChange(e);
-                                }
-                            }}
-                        />
-                    </Grid>
-                </Grid>
-
-                {/* ⏰ 加班費 */}
+                {/* 💰 金額 */}
                 <TextField
-                    label="加班費"
-                    name="overtimePay"
+                    label="支出金額"
+                    name="amount"
                     type="number"
                     fullWidth
-                    value={record.overtimePay || ''}
+                    value={record.amount || ''}
                     inputProps={{
                         min: 1,
                         step: 1,
@@ -140,6 +91,7 @@ export default function WorkReportForm({
                         }
                     }}
                 />
+
                 <TextField label="備註" name="note" value={record.note} onChange={handleChange} fullWidth />
 
                 <Button variant="contained" color="primary" onClick={onSave}

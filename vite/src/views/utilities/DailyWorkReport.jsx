@@ -1,7 +1,7 @@
 // material-ui
 import Grid from '@mui/material/Grid2';
 import { Typography, Box } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 import { writeTextFile, readTextFile, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs';
@@ -31,9 +31,10 @@ export default function DailyWorkReport() {
     const [editPkno, setEditPkno] = useState(null); // ✅ 新增：記錄目前正在編輯的 pkno
     const [isEditing, setIsEditing] = useState(false); // ✅ 新增：是否為編輯模式
     const [resetKey, setResetKey] = useState(0);
+    const formRef = useRef(null); // 👈 新增 Ref
 
     const dirName = 'data';
-    const fileName = `${ dirName }/DailyWorkReport.json`;
+    const fileName = `${dirName}/DailyWorkReport.json`;
 
     const companyStore = useJsonStore('company.json');
     const toolStore = useJsonStore('tool.json');
@@ -50,7 +51,7 @@ export default function DailyWorkReport() {
     // JSON 檔案通用讀取
     function useJsonStore(fileName) {
         const [items, setItems] = useState([]);
-        const filePath = `${ dirName }/${ fileName }`;
+        const filePath = `${dirName}/${fileName}`;
 
         const load = async () => {
             try {
@@ -200,7 +201,7 @@ export default function DailyWorkReport() {
         }
 
         const result = await Swal.fire({
-            title: `確定要刪除 ${ pkList.length } 筆資料嗎？`,
+            title: `確定要刪除 ${pkList.length} 筆資料嗎？`,
             text: '刪除後無法復原！',
             icon: 'warning',
             showCancelButton: true,
@@ -219,7 +220,7 @@ export default function DailyWorkReport() {
 
             await writeTextFile(fileName, JSON.stringify(newList, null, 2), { baseDir: BaseDirectory.AppData });
 
-            Swal.fire('刪除成功', `🗑️ 已刪除 ${ pkList.length } 筆資料`, 'success');
+            Swal.fire('刪除成功', `🗑️ 已刪除 ${pkList.length} 筆資料`, 'success');
 
             handleLoad();
             // ✅ 通知子層清空勾選
@@ -245,6 +246,37 @@ export default function DailyWorkReport() {
             note: item.note || ''
         });
         setDate(dayjs(item.date, 'YYYY/MM/DD'));
+
+        // ✅ 加上更慢的滑動動畫
+        setTimeout(() => {
+            const target = formRef.current;
+            if (!target) return;
+
+            const targetY = target.getBoundingClientRect().top + window.scrollY - 100; // 調整偏移
+            const startY = window.scrollY;
+            const distance = targetY - startY;
+            const duration = 1000; // 🕒 動畫時間（毫秒）→ 想更慢可改 1500~2000
+            const startTime = performance.now();
+
+            function smoothScrollStep(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeInOut = progress < 0.5
+                    ? 2 * progress * progress
+                    : -1 + (4 - 2 * progress) * progress; // 緩入緩出
+
+                window.scrollTo(0, startY + distance * easeInOut);
+
+                if (progress < 1) requestAnimationFrame(smoothScrollStep);
+                else {
+                    // ✅ 最後 focus 到第一個 input
+                    const firstInput = target.querySelector('input, textarea, select');
+                    if (firstInput) firstInput.focus();
+                }
+            }
+
+            requestAnimationFrame(smoothScrollStep);
+        }, 100);
     };
 
     // ✅ 重置表單與狀態
@@ -277,7 +309,7 @@ export default function DailyWorkReport() {
             }
         >
             <Grid container spacing={gridSpacing}>
-                <Grid size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }} ref={formRef}>
                     <WorkReportForm
                         record={record}
                         setRecord={setRecord}
