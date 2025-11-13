@@ -37,7 +37,11 @@ export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWor
                         color: '#fff',
                         overflow: 'hidden',
                         position: 'relative',
-                        height: '100%',
+                        height: {
+                            xs: '100%',  // 手機、小螢幕
+                            md: '100%',  // 中尺寸螢幕
+                            lg: '90%'    // 大螢幕縮短
+                        },
                         '&>div': {
                             position: 'relative',
                             zIndex: 5
@@ -69,7 +73,7 @@ export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWor
                         sx={{
                             p: 2.25,
                             [theme.breakpoints.up('lg')]: {
-                                mt: 1, // 整體往下移
+                                mt: 0, // 整體往下移
                                 p: 3.5
                             }
                         }}
@@ -84,7 +88,7 @@ export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWor
                                     justifyContent: 'space-between', // ← 左右兩邊分開
                                     gap: 2,
                                     [theme.breakpoints.up('lg')]: {
-                                        mb: 3 // 標題與內容間距變大
+                                        mb: 0 // 標題與內容間距變大
                                     }
                                 }}
                             >
@@ -155,7 +159,7 @@ export default function TotalOrderLineChartCard({ isLoading, yearIncome, yearWor
                                         gap: 0.5,
                                         [theme.breakpoints.up('lg')]: {
                                             mt: 2, // 間距加大
-                                            gap: 1
+                                            gap: 0
                                         }
                                     }}
                                 >

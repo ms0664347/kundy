@@ -23,7 +23,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(210.04deg, ${theme.palette.primary[200]} -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
+        background: `linear-gradient(210.04deg, ${ theme.palette.primary[200] } -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
         borderRadius: '50%',
         top: -30,
         right: -180
@@ -33,7 +33,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(140.9deg, ${theme.palette.primary[200]} -14.02%, rgba(144, 202, 249, 0) 77.58%)`,
+        background: `linear-gradient(140.9deg, ${ theme.palette.primary[200] } -14.02%, rgba(144, 202, 249, 0) 77.58%)`,
         borderRadius: '50%',
         top: -160,
         right: -130
@@ -49,8 +49,8 @@ export default function TotalIncomeDarkCard({ isLoading, topTool, topExpense, cu
     const color = mode === 'income' ? '#55f458ff' : '#fac472ff';
     const name = mode === 'income' ? (topTool?.name || '—') : (topExpense?.category || '—');
     const value = mode === 'income'
-        ? `${topTool?.count?.toLocaleString?.() || 0} 次`
-        : `$${topExpense?.total?.toLocaleString?.() || 0}`;
+        ? `${ topTool?.count?.toLocaleString?.() || 0 } 次`
+        : `$${ topExpense?.total?.toLocaleString?.() || 0 }`;
 
     return (
         <>
@@ -80,12 +80,16 @@ export default function TotalIncomeDarkCard({ isLoading, topTool, topExpense, cu
                                 />
                                 <Typography
                                     sx={{
-                                        fontSize: '1.125rem',
+                                        fontSize: {
+                                            xs: '1rem',   // 小尺寸（手機）
+                                            md: '1.25rem', // 中尺寸（平板）
+                                            lg: '1.5rem'   // 大尺寸（桌機）
+                                        },
                                         fontWeight: 500,
                                         color: '#fff'
                                     }}
                                 >
-                                    本月 ({currentMonth}月) 使用最多
+                                    本月 ({currentMonth}月) {labelText}最多項目
                                 </Typography>
                             </Box>
 
@@ -134,13 +138,14 @@ export default function TotalIncomeDarkCard({ isLoading, topTool, topExpense, cu
                                 },
                                 display: 'flex',           // ✅ 同一行排列
                                 alignItems: 'baseline',    // ✅ 對齊底線（讓字漂亮對齊）
-                                justifyContent: 'start',
-                                gap: 1                     // ✅ 兩者間距
+                                gap: 1,                     // ✅ 兩者間距
+                                mt: 0,
+                                ml: 4
                             }}
                         >
                             <Typography
                                 sx={{
-                                    fontSize: '1.6rem',
+                                    fontSize: '1.8rem',
                                     fontWeight: 600,
                                     color
                                 }}

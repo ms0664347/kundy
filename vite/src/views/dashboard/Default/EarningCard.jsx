@@ -41,7 +41,7 @@ export default function EarningCard({ isLoading, monthIncome, monthWorkDays, mon
                         height: {
                             xs: '100%',  // 手機、小螢幕
                             md: '100%',  // 中尺寸螢幕
-                            lg: '80%'    // 大螢幕縮短
+                            lg: '90%'    // 大螢幕縮短
                         },
                         '&:after': {
                             content: '""',
@@ -70,7 +70,7 @@ export default function EarningCard({ isLoading, monthIncome, monthWorkDays, mon
                         sx={{
                             p: 2.25,
                             [theme.breakpoints.up('lg')]: {
-                                mt: 1, // 整體往下移
+                                mt: 0, // 整體往下移
                                 p: 3.5
                             }
                         }}
@@ -84,7 +84,7 @@ export default function EarningCard({ isLoading, monthIncome, monthWorkDays, mon
                                     justifyContent: 'space-between', // ← 左右兩邊分開
                                     gap: 2,
                                     [theme.breakpoints.up('lg')]: {
-                                        mb: 3 // 標題與內容間距變大
+                                        mb: 0 // 標題與內容間距變大
                                     }
                                 }}
                             >
@@ -150,7 +150,7 @@ export default function EarningCard({ isLoading, monthIncome, monthWorkDays, mon
                                         mt: 1,
                                         gap: 0.5,
                                         [theme.breakpoints.up('lg')]: {
-                                            mt: 0, // 間距加大
+                                            mt: 2, // 間距加大
                                             gap: 0
                                         }
                                     }}

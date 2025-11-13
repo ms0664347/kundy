@@ -47,8 +47,8 @@ export default function Dashboard() {
 
 
     const dirName = 'data';
-    const fileName = `${dirName}/DailyWorkReport.json`;
-    const expenseFile = `${dirName}/DailyCostReport.json`;
+    const fileName = `${ dirName }/DailyWorkReport.json`;
+    const expenseFile = `${ dirName }/DailyCostReport.json`;
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -60,171 +60,115 @@ export default function Dashboard() {
     };
 
     // ✅ 讀取全部資料
+    // 小工具：安全解析
+    const safeParseJson = (text) => {
+        if (!text || !text.trim()) return [];
+        try {
+            const obj = JSON.parse(text);
+            return Array.isArray(obj) ? obj : [];
+        } catch {
+            return [];
+        }
+    };
+
     const handleLoad = async () => {
         try {
-            // 🔹 確保資料夾存在
             await mkdir(dirName, { baseDir: BaseDirectory.AppData, recursive: true });
 
             let content = '';
             let expenseContent = '';
 
             try {
-                // 🔹 嘗試讀取檔案
                 content = await readTextFile(fileName, { baseDir: BaseDirectory.AppData });
+            } catch (e) {
+                // 不存在就建立為 []
+                await writeTextFile(fileName, '[]', { baseDir: BaseDirectory.AppData });
+                content = '[]';
+            }
+
+            try {
                 expenseContent = await readTextFile(expenseFile, { baseDir: BaseDirectory.AppData });
-            } catch (err) {
-                // 🔹 捕捉多種情況（Windows / macOS / Linux）
-                const msg = String(err).toLowerCase();
-                if (
-                    msg.includes('file not found') ||
-                    msg.includes('no such file') ||
-                    msg.includes('failed to open file') ||
-                    msg.includes('os error 2')
-                ) {
-                    // ✅ 檔案不存在 → 自動建立空 JSON 檔案
-                    console.warn('📁  檔案不存在，正在建立空檔案...');
-                    await writeTextFile(fileName, '[]', { baseDir: BaseDirectory.AppData });
-                    await writeTextFile(expenseFile, '[]', { baseDir: BaseDirectory.AppData });
-                    content = '[]';
-                    expenseContent = '[]';
-                } else {
-                    throw err; // 其他錯誤往外拋
-                }
+            } catch (e) {
+                await writeTextFile(expenseFile, '[]', { baseDir: BaseDirectory.AppData });
+                expenseContent = '[]';
             }
 
-            if (!content || content.trim() === '') {
-                setLoadedData([]);
-                return;
-            }
+            // ✅ 不要 return，空就當 []
+            const jsonData = safeParseJson(content);
+            const expenseJsonData = safeParseJson(expenseContent);
 
-            if (!expenseContent || expenseContent.trim() === '') {
-                setLoadedExpenseData([]);
-                return;
-            }
+            // ✅ 一律 set（就算是空陣列也可）
+            setLoadedData(jsonData);
+            setLoadedExpenseData(expenseJsonData);
 
-            const jsonData = JSON.parse(content);
-            const expenseJsonData = JSON.parse(expenseContent);
-
-            if (!Array.isArray(jsonData) || jsonData.length === 0) {
-                setLoadedData([]);
-                return;
-            }
-
-            if (!Array.isArray(expenseJsonData) || expenseJsonData.length === 0) {
-                setLoadedExpenseData([]);
-                return;
-            }
-
-            // ✅ 篩選本月資料（降冪排序）
+            // === 以下照舊計算（空陣列也能正確得到 0） ===
             const now = dayjs();
-            const currentMonth = now.format('YYYY/MM');
-            const currentYear = now.format('YYYY');
+            const currentMonthStr = now.format('YYYY/MM');
+            const currentYearStr = now.format('YYYY');
 
             const filteredData = jsonData
-                .filter((item) => item.date && item.date.startsWith(currentMonth))
-                .sort((a, b) => {
-                    const dateA = dayjs(a.date, 'YYYY/MM/DD');
-                    const dateB = dayjs(b.date, 'YYYY/MM/DD');
-                    return dateB.diff(dateA);
-                });
+                .filter((item) => item.date?.startsWith(currentMonthStr))
+                .sort((a, b) => dayjs(b.date, 'YYYY/MM/DD').diff(dayjs(a.date, 'YYYY/MM/DD')));
 
             const filteredExpenseData = expenseJsonData
-                .filter((item) => item.date && item.date.startsWith(currentMonth))
-                .sort((a, b) => {
-                    const dateA = dayjs(a.date, 'YYYY/MM/DD');
-                    const dateB = dayjs(b.date, 'YYYY/MM/DD');
-                    return dateB.diff(dateA);
-                })
+                .filter((item) => item.date?.startsWith(currentMonthStr))
+                .sort((a, b) => dayjs(b.date, 'YYYY/MM/DD').diff(dayjs(a.date, 'YYYY/MM/DD')));
 
-            // ✅ 1. 本月總收入（含加班）
-            const monthTotal = filteredData.reduce((sum, item) => {
-                const amount = Number(item.amount) || 0;
-                const overtime = Number(item.overtimePay) || 0;
-                return sum + amount + overtime;
-            }, 0);
+            // 本月總收入 / 支出
+            const monthTotal = filteredData.reduce((sum, it) =>
+                sum + (Number(it.amount) || 0) + (Number(it.overtimePay) || 0), 0);
 
-            // ✅ 1-1本月總支出
-            const monthExpenseTotal = filteredExpenseData.reduce((sum, item) => {
-                const amount = Number(item.amount) || 0;
-                return sum + amount;
-            }, 0);
+            const monthExpenseTotal = filteredExpenseData.reduce((sum, it) =>
+                sum + (Number(it.amount) || 0), 0);
 
-            // ✅ 2. 年度總收入（含加班）
-            const yearData = jsonData.filter((item) => item.date && item.date.startsWith(currentYear));
-            const yearTotal = yearData.reduce((sum, item) => {
-                const amount = Number(item.amount) || 0;
-                const overtime = Number(item.overtimePay) || 0;
-                return sum + amount + overtime;
-            }, 0);
+            // 年度總收入 / 支出
+            const yearData = jsonData.filter((it) => it.date?.startsWith(currentYearStr));
+            const yearTotal = yearData.reduce((sum, it) =>
+                sum + (Number(it.amount) || 0) + (Number(it.overtimePay) || 0), 0);
 
-            // ✅ 2-1年度總支出
-            const yearExpenseData = expenseJsonData.filter((item) => item.date && item.date.startsWith(currentYear));
-            const yearExpenseTotal = yearExpenseData.reduce((sum, item) => {
-                const amount = Number(item.amount) || 0;
-                return sum + amount;
-            }, 0);
+            const yearExpenseData = expenseJsonData.filter((it) => it.date?.startsWith(currentYearStr));
+            const yearExpenseTotal = yearExpenseData.reduce((sum, it) =>
+                sum + (Number(it.amount) || 0), 0);
 
-            // ✅ 3. 本月最常使用工具
+            // 本月最常用工具
             const toolCount = {};
-            filteredData.forEach((item) => {
-                const tool = item.tool || '未填寫';
-                toolCount[tool] = (toolCount[tool] || 0) + 1;
-            });
+            for (const it of filteredData) {
+                const k = it.tool || '未填寫';
+                toolCount[k] = (toolCount[k] || 0) + 1;
+            }
             const topToolEntry = Object.entries(toolCount).sort((a, b) => b[1] - a[1])[0] || ['', 0];
 
-            // ✅ 3-1 本月支出金額最高的類別
-            const expenseTypeSum = {}; // 類別 → 總金額
-            filteredExpenseData.forEach((item) => {
-                const category = item.category || '未填寫';
-                const amount = Number(item.amount) || 0;
-                expenseTypeSum[category] = (expenseTypeSum[category] || 0) + amount;
-            });
+            // 本月支出最高類別
+            const expenseTypeSum = {};
+            for (const it of filteredExpenseData) {
+                const k = it.category || '未填寫';
+                expenseTypeSum[k] = (expenseTypeSum[k] || 0) + (Number(it.amount) || 0);
+            }
+            const [topExpenseCategory = '', topExpenseAmount = 0] =
+                (Object.entries(expenseTypeSum).sort((a, b) => b[1] - a[1])[0] || ['', 0]);
 
-            // ✅ 找出金額最高的類別
-            const topExpenseTypeEntry =
-                Object.entries(expenseTypeSum).sort((a, b) => b[1] - a[1])[0] || ['', 0];
-
-            const [topExpenseCategory, topExpenseAmount] = topExpenseTypeEntry;
-
-
-            // ✅ 4. 今年收入最高的公司
+            // 今年收入最高公司
             const companySum = {};
-            jsonData.forEach((item) => {
-
-                if (item.date && item.date.startsWith(currentYear)) {
-                    const company = item.company || '未填寫';
-                    const income = (Number(item.amount) || 0) + (Number(item.overtimePay) || 0);
-                    companySum[company] = (companySum[company] || 0) + income;
-                }
-            });
+            for (const it of yearData) {
+                const k = it.company || '未填寫';
+                companySum[k] = (companySum[k] || 0) +
+                    (Number(it.amount) || 0) + (Number(it.overtimePay) || 0);
+            }
             const topCompanyEntry = Object.entries(companySum).sort((a, b) => b[1] - a[1])[0] || ['', 0];
 
-            // ✅ 5. 本月工作天數（以日期不重複計算）
-            const uniqueDays = new Set(filteredData.map(item => item.date)).size;
+            // 天數
+            const uniqueDays = new Set(filteredData.map(it => it.date)).size;
+            const uniqueExpenseDays = new Set(filteredExpenseData.map(it => it.date)).size;
+            const totalDaysInMonth = now.daysInMonth();
+            const yearWorkDays = new Set(yearData.map(it => it.date)).size;
+            const yearExpenseDays = new Set(yearExpenseData.map(it => it.date)).size;
 
-            // 5-1. 本月總支出天數
-            const uniqueExpenseDays = new Set(filteredExpenseData.map(item => item.date)).size;
-
-            // ✅ 6. 本月總天數
-            const totalDaysInMonth = now.daysInMonth(); // ✅ 例如 11 月會是 30
-
-            // ✅ 7. 今年工作天數（僅限今年）
-            const yearWorkDays = new Set(
-                jsonData
-                    .filter((item) => item.date && item.date.startsWith(currentYear))
-                    .map((item) => item.date)
-            ).size;
-
-            // 7-1. 今年總支出天數
-            const yearExpenseDays = new Set(yearExpenseData.map((item) => item.date)).size;
-
-
-            // ✅ 存入 state
+            // setState
             setMonthIncome(monthTotal);
             setYearIncome(yearTotal);
             setTopTool({ name: topToolEntry[0], count: topToolEntry[1] });
             setTopCompany({ name: topCompanyEntry[0], total: topCompanyEntry[1] });
-            setMonthWorkDays(uniqueDays); // ✅ 新增
+            setMonthWorkDays(uniqueDays);
             setTotalDaysInMonth(totalDaysInMonth);
             setYearWorkDays(yearWorkDays);
 
@@ -232,18 +176,14 @@ export default function Dashboard() {
             setMonthExpenseDays(uniqueExpenseDays);
             setYearExpense(yearExpenseTotal);
             setYearExpenseDays(yearExpenseDays);
-            setTopExpense({
-                category: topExpenseCategory,
-                total: topExpenseAmount
-            });
+            setTopExpense({ category: topExpenseCategory, total: topExpenseAmount });
 
-
-            setLoadedData(jsonData);
         } catch (err) {
             console.error('❌ 讀取失敗:', err);
             showAlert('warning', '發生錯誤', '請聯絡阿廷或阿夆工程師');
         }
     };
+
 
     useEffect(() => {
         const now = dayjs();
