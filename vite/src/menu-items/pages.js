@@ -1,16 +1,16 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
-
+import { IconKey, IconMessageChatbot } from '@tabler/icons-react';
 // constant
 const icons = {
-  IconKey
+  IconKey,
+  IconMessageChatbot
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
 
 const pages = {
   id: 'pages',
-  title: 'Pages',
+  title: 'AI與你聊天',
   icon: icons.IconKey,
   type: 'group',
   children: [
@@ -19,7 +19,7 @@ const pages = {
       title: '與AI聊聊',
       type: 'item',
       url: '/talkToAI',
-      icon: icons.IconMoneybag,
+      icon: icons.IconMessageChatbot,
       breadcrumbs: false
     },
   ]

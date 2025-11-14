@@ -20,7 +20,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(210.04deg, ${theme.palette.warning.dark} -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
+        background: `linear-gradient(210.04deg, ${ theme.palette.warning.dark } -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
         borderRadius: '50%',
         top: -30,
         right: -180
@@ -30,7 +30,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(140.9deg, ${theme.palette.warning.dark} -14.02%, rgba(144, 202, 249, 0) 70.50%)`,
+        background: `linear-gradient(140.9deg, ${ theme.palette.warning.dark } -14.02%, rgba(144, 202, 249, 0) 70.50%)`,
         borderRadius: '50%',
         top: -160,
         right: -130
@@ -45,8 +45,8 @@ export default function TotalIncomeLightCard({ isLoading, averageMonIncome, aver
     const labelText = mode === 'income' ? '收入' : '支出';
     const color = mode === 'income' ? '#2ec930ff' : '#e9a846ff';
     const value = mode === 'income'
-        ? `$${averageMonIncome.toLocaleString?.() || 0}`
-        : `$${averageMonExpense.toLocaleString?.() || 0}`;
+        ? `$${ averageMonIncome.toLocaleString?.() || 0 }`
+        : `$${ averageMonExpense.toLocaleString?.() || 0 }`;
 
     return (
         <>
@@ -134,7 +134,7 @@ export default function TotalIncomeLightCard({ isLoading, averageMonIncome, aver
                                 display: 'flex',           // ✅ 同一行排列
                                 alignItems: 'baseline',    // ✅ 對齊底線（讓字漂亮對齊）
                                 gap: 2,                     // ✅ 兩者間距
-                                mt: 0.5,
+                                mt: 0,
                                 ml: 4
                             }}
                         >

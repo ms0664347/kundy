@@ -4,29 +4,26 @@ use tauri::{command, Builder};
 use tauri_plugin_fs;
 
 // -----------------------------
-//  Gemini API 呼叫
+//  ChatGPT API 呼叫 (free.v36.cm)
 // -----------------------------
 #[command]
-async fn call_gemini(prompt: String) -> Result<String, String> {
-    let api_key = "AIzaSyDpqum21VXGyp2EXFzVCffcf479XcYmM1o";
+async fn call_chatgpt(prompt: String) -> Result<String, String> {
+    let api_key = "sk-U7R7DD8l4EYNY2E6D3A8A4B81a1842D89830Fb06D8F08fDf";  // ← 這邊改成你申請到的 key
 
-    let url = format!(
-        "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={}",
-        api_key
-    );
+    let url = "https://free.v36.cm/v1/chat/completions";
 
     let body = json!({
-        "contents": [
-            {
-                "parts": [{ "text": prompt }]
-            }
+        "model": "gpt-4o-mini",
+        "messages": [
+            { "role": "user", "content": prompt }
         ]
     });
 
     let client = Client::new();
 
     let res = client
-        .post(&url)
+        .post(url)
+        .header("Authorization", format!("Bearer {}", api_key))
         .json(&body)
         .send()
         .await
@@ -45,10 +42,9 @@ async fn call_gemini(prompt: String) -> Result<String, String> {
 // -----------------------------
 pub fn run() {
     Builder::default()
-        // 啟用 fs plugin（你有讀寫檔案需求必須有這行）
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
-            call_gemini
+            call_chatgpt
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

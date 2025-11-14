@@ -29,37 +29,37 @@ export default function TalkToAI() {
         setMessages((prev) => [...prev, { role: "user", text: userMessage }]);
         setInput("");
 
-        // 先加上 AI 打字中...
         const typingIndex = messages.length + 1;
         setMessages((prev) => [...prev, { role: "ai", text: "...(輸入中)" }]);
 
         try {
-            const reply = await invoke("call_gemini", { prompt: userMessage });
+            const reply = await invoke("call_chatgpt", { prompt: userMessage });
 
             let replyText = "(AI 無回覆內容)";
             try {
                 const parsed = JSON.parse(reply);
                 replyText =
-                    parsed?.candidates?.[0]?.content?.parts?.[0]?.text ??
+                    parsed?.choices?.[0]?.message?.content ??
                     "(AI 無回覆內容)";
             } catch {
                 replyText = reply;
             }
 
-            // 替換掉「...」
             setMessages((prev) => {
                 const newMsg = [...prev];
                 newMsg[typingIndex] = { role: "ai", text: replyText };
                 return newMsg;
             });
+
         } catch (err) {
             setMessages((prev) => {
                 const newMsg = [...prev];
-                newMsg[typingIndex] = { role: "ai", text: `⚠️ 錯誤：${err}` };
+                newMsg[typingIndex] = { role: "ai", text: `⚠️ 錯誤：${ err }` };
                 return newMsg;
             });
         }
     };
+
 
     // Enter 送出
     const handleKeyDown = (e) => {
@@ -71,7 +71,7 @@ export default function TalkToAI() {
             p={3}
             sx={{ height: "100%", display: "flex", flexDirection: "column" }}
         >
-            <Typography variant="h4" fontWeight="bold" mb={2}>
+            <Typography variant="h2" fontWeight="bold" mb={2}>
                 💬 Talk to AI
             </Typography>
 
@@ -104,7 +104,14 @@ export default function TalkToAI() {
                                 opacity: m.text === "..." ? 0.7 : 1,
                             }}
                         >
-                            <Typography whiteSpace="pre-line">{m.text}</Typography>
+                            <Typography
+                                whiteSpace="pre-line"
+                                sx={{
+                                    fontSize: '1.2rem',
+                                }}
+                            >
+                                {m.text}
+                            </Typography>
                         </Box>
                     </Grid>
                 ))}
