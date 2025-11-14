@@ -110,61 +110,58 @@ export default function SearchSection() {
     // 🌦️ 自動載入今日天氣
     useEffect(() => {
         async function fetchWeather() {
-            const apiKey = "1068531ca0e8f031aa9585356721e63a";
+            const apiKey = "fadd5cdc309f4c7c8a472707251411";
             const city = "Miaoli";
 
             try {
+                // 用 forecast API 才有 hourly chance_of_rain
                 const res = await fetch(
-                    `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=zh_tw`
+                    `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=1&lang=zh_tw`
                 );
                 const data = await res.json();
 
-                if (data?.list?.length) {
-                    // ✅ 抓今天（只取今日日期的資料）
-                    const todayStr = new Date().toISOString().slice(0, 10);
-                    const todayForecasts = data.list.filter(item => item.dt_txt.startsWith(todayStr));
+                if (data?.forecast?.forecastday?.length) {
+                    const today = data.forecast.forecastday[0];
 
-                    // ✅ 平均降雨機率（若無 pop 則視為 0）
-                    const avgPop = todayForecasts.length
-                        ? Math.round(
-                            todayForecasts.reduce((sum, item) => sum + (item.pop || 0), 0) /
-                            todayForecasts.length *
-                            100
-                        )
-                        : 0;
+                    // 今日每小時資料
+                    const hours = today.hour;
 
-                    // ✅ 取最接近現在時間的那筆
-                    const nowTimestamp = Date.now();
-                    const closest = todayForecasts.reduce((prev, curr) => {
-                        return Math.abs(new Date(curr.dt_txt) - nowTimestamp) <
-                            Math.abs(new Date(prev.dt_txt) - nowTimestamp)
+                    // 找到「最接近現在」的那小時
+                    const now = Date.now();
+                    const closest = hours.reduce((prev, curr) => {
+                        return Math.abs(new Date(curr.time) - now) <
+                            Math.abs(new Date(prev.time) - now)
                             ? curr
                             : prev;
                     });
 
-                    const desc = closest.weather[0].description;
-                    const temp = Math.round(closest.main.temp);
-                    const feels = Math.round(closest.main.feels_like);
+                    // 取得資料
+                    const desc = closest.condition.text;
+                    const temp = Math.round(closest.temp_c);
+                    const feels = Math.round(closest.feelslike_c);
 
+                    // ⭐ 每小時降雨機率（最準確）
+                    const rainProb = closest.chance_of_rain ?? 0;
+
+                    // emoji
                     let icon = "🌤";
                     if (desc.includes("雲")) icon = "☁️";
                     else if (desc.includes("雨")) icon = "🌧️";
                     else if (desc.includes("晴")) icon = "☀️";
 
-                    const weatherMsg = `苗栗今天天氣：${desc}${icon}，氣溫 ${temp}°C，體感 ${feels}°C，降雨機率 ${avgPop}%`;
+                    const weatherMsg = `苗栗今天天氣：${desc}${icon}，氣溫 ${temp}°C，體感 ${feels}°C，降雨機率 ${rainProb}%`;
+
                     setTexts(prev => [weatherMsg, ...prev]);
                 } else {
-                    console.warn("⚠️ 無法取得天氣資料", data);
+                    console.warn("⚠️ WeatherAPI 回傳無資料", data);
                 }
             } catch (err) {
-                console.error("❌ 無法取得天氣資料", err);
+                console.error("❌ 無法取得 WeatherAPI 天氣資料", err);
             }
         }
 
         fetchWeather();
     }, []);
-
-
 
     useEffect(() => {
         const timer = setInterval(() => {

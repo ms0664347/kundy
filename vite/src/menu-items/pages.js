@@ -9,35 +9,20 @@ const icons = {
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
 
 const pages = {
-  // id: 'pages',
-  // title: 'Pages',
-  // caption: 'Pages Caption',
-  // icon: icons.IconKey,
-  // type: 'group',
-  // children: [
-  //   {
-  //     id: 'authentication',
-  //     title: 'Authentication001',
-  //     type: 'collapse',
-  //     icon: icons.IconKey,
-  //     children: [
-  //       {
-  //         id: 'login',
-  //         title: 'login',
-  //         type: 'item',
-  //         url: '/pages/login',
-  //         target: true
-  //       },
-  //       {
-  //         id: 'register',
-  //         title: 'register',
-  //         type: 'item',
-  //         url: '/pages/register',
-  //         target: true
-  //       }
-  //     ]
-  //   }
-  // ]
+  id: 'pages',
+  title: 'Pages',
+  icon: icons.IconKey,
+  type: 'group',
+  children: [
+    {
+      id: 'dailyCostReport',
+      title: '與AI聊聊',
+      type: 'item',
+      url: '/talkToAI',
+      icon: icons.IconMoneybag,
+      breadcrumbs: false
+    },
+  ]
 };
 
 export default pages;

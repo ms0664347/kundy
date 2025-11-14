@@ -21,6 +21,9 @@ const AllCostReport = Loadable(lazy(() => import('views/sample-page/AllCostRepor
 const Category = Loadable(lazy(() => import('views/sample-page/Category')));
 const Method = Loadable(lazy(() => import('views/sample-page/Method')));
 
+// page
+const TalkToAI = Loadable(lazy(() => import('views/pages/TalkToAI')));
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -71,6 +74,10 @@ const MainRoutes = {
     {
       path: 'method',
       element: <Method />
+    },
+    {
+      path: 'talkToAI',
+      element: <TalkToAI />
     }
   ]
 };
