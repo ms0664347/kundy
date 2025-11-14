@@ -10,11 +10,13 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 
 export default function TalkToAI() {
-    const [messages, setMessages] = useState([]); // { role: 'user' | 'ai', text: '' }
+    const [messages, setMessages] = useState([
+        { role: "ai", text: "你好，今天有什麼需要幫助的嗎？" }, // 預設訊息
+    ]);
     const [input, setInput] = useState("");
     const chatEndRef = useRef(null);
 
-    // 自動捲到底
+    // 自動捲到最底
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
@@ -26,6 +28,10 @@ export default function TalkToAI() {
         const userMessage = input;
         setMessages((prev) => [...prev, { role: "user", text: userMessage }]);
         setInput("");
+
+        // 先加上 AI 打字中...
+        const typingIndex = messages.length + 1;
+        setMessages((prev) => [...prev, { role: "ai", text: "...(輸入中)" }]);
 
         try {
             const reply = await invoke("call_gemini", { prompt: userMessage });
@@ -40,12 +46,18 @@ export default function TalkToAI() {
                 replyText = reply;
             }
 
-            setMessages((prev) => [...prev, { role: "ai", text: replyText }]);
+            // 替換掉「...」
+            setMessages((prev) => {
+                const newMsg = [...prev];
+                newMsg[typingIndex] = { role: "ai", text: replyText };
+                return newMsg;
+            });
         } catch (err) {
-            setMessages((prev) => [
-                ...prev,
-                { role: "ai", text: `⚠️ 錯誤：${err}` },
-            ]);
+            setMessages((prev) => {
+                const newMsg = [...prev];
+                newMsg[typingIndex] = { role: "ai", text: `⚠️ 錯誤：${err}` };
+                return newMsg;
+            });
         }
     };
 
@@ -88,6 +100,8 @@ export default function TalkToAI() {
                                 borderRadius: 2,
                                 bgcolor: m.role === "user" ? "#1976d2" : "#eceff1",
                                 color: m.role === "user" ? "#fff" : "#000",
+                                fontStyle: m.text === "..." ? "italic" : "normal",
+                                opacity: m.text === "..." ? 0.7 : 1,
                             }}
                         >
                             <Typography whiteSpace="pre-line">{m.text}</Typography>
@@ -97,7 +111,7 @@ export default function TalkToAI() {
                 <div ref={chatEndRef}></div>
             </Paper>
 
-            {/* 下方輸入列 */}
+            {/* 下方輸入區 */}
             <Grid container spacing={2} mt={2}>
                 <Grid item xs={10}>
                     <TextField
