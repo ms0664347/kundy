@@ -37,6 +37,8 @@ export default function Dashboard() {
     const [totalDaysInMonth, setTotalDaysInMonth] = useState(0);
     const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY/MM'));
     const [currentYear, setCurrentYear] = useState(dayjs().format('YYYY'));
+    const [averageMonIncome, setAverageMonIncome] = useState(0);
+    const [averageMonExpense, setAverageMonExpense] = useState(0);
 
     // 📉 支出統計
     const [monthExpense, setMonthExpense] = useState(0);
@@ -47,8 +49,8 @@ export default function Dashboard() {
 
 
     const dirName = 'data';
-    const fileName = `${ dirName }/DailyWorkReport.json`;
-    const expenseFile = `${ dirName }/DailyCostReport.json`;
+    const fileName = `${dirName}/DailyWorkReport.json`;
+    const expenseFile = `${dirName}/DailyCostReport.json`;
 
     const showAlert = (icon, title, text) => {
         Swal.fire({
@@ -178,6 +180,9 @@ export default function Dashboard() {
             setYearExpenseDays(yearExpenseDays);
             setTopExpense({ category: topExpenseCategory, total: topExpenseAmount });
 
+            setAverageMonIncome(Math.floor(yearTotal / 12));
+            setAverageMonExpense(Math.floor(yearExpenseTotal / 12));
+
         } catch (err) {
             console.error('❌ 讀取失敗:', err);
             showAlert('warning', '發生錯誤', '請聯絡阿廷或阿夆工程師');
@@ -231,8 +236,9 @@ export default function Dashboard() {
                             <Grid size={{ sm: 6, xs: 12, md: 6, lg: 6 }}>
                                 <TotalIncomeLightCard
                                     isLoading={isLoading}
-                                    topCompany={topCompany}
                                     currentYear={currentYear}
+                                    averageMonIncome={averageMonIncome}
+                                    averageMonExpense={averageMonExpense}
                                 />
                             </Grid>
                         </Grid>
@@ -245,6 +251,7 @@ export default function Dashboard() {
                         <TotalGrowthBarChart
                             isLoading={isLoading}
                             loadedData={loadedData}   // 👈 全部 or 今年的日誌陣列
+                            loadedExpenseData={loadedExpenseData}
                         />
                     </Grid>
                     {/* <Grid size={{ xs: 12, md: 4 }}>

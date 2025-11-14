@@ -23,7 +23,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(210.04deg, ${ theme.palette.primary[200] } -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
+        background: `linear-gradient(210.04deg, ${theme.palette.primary[200]} -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
         borderRadius: '50%',
         top: -30,
         right: -180
@@ -33,7 +33,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(140.9deg, ${ theme.palette.primary[200] } -14.02%, rgba(144, 202, 249, 0) 77.58%)`,
+        background: `linear-gradient(140.9deg, ${theme.palette.primary[200]} -14.02%, rgba(144, 202, 249, 0) 77.58%)`,
         borderRadius: '50%',
         top: -160,
         right: -130
@@ -45,12 +45,12 @@ export default function TotalIncomeDarkCard({ isLoading, topTool, topExpense, cu
     const [mode, setMode] = React.useState('income'); // 預設顯示收入
 
     // 根據 mode 切換顯示內容
-    const labelText = mode === 'income' ? '收入' : '支出';
+    const labelText = mode === 'income' ? '使用次數' : '支出';
     const color = mode === 'income' ? '#55f458ff' : '#fac472ff';
     const name = mode === 'income' ? (topTool?.name || '—') : (topExpense?.category || '—');
     const value = mode === 'income'
-        ? `${ topTool?.count?.toLocaleString?.() || 0 } 次`
-        : `$${ topExpense?.total?.toLocaleString?.() || 0 }`;
+        ? `${topTool?.count?.toLocaleString?.() || 0} 次`
+        : `$${topExpense?.total?.toLocaleString?.() || 0}`;
 
     return (
         <>
@@ -145,18 +145,34 @@ export default function TotalIncomeDarkCard({ isLoading, topTool, topExpense, cu
                         >
                             <Typography
                                 sx={{
-                                    fontSize: '1.8rem',
+                                    fontSize: '2rem',
                                     fontWeight: 600,
-                                    color
+                                    color,
+                                    opacity: 0,
+                                    transform: 'scale(0.9)',
+                                    animation: 'fadeInScale 0.6s ease forwards', // 👈 呼叫動畫
+                                    [theme.breakpoints.up('lg')]: { fontSize: '2.2rem' },
+                                    '@keyframes fadeInScale': {
+                                        '0%': { opacity: 0, transform: 'scale(0.9)' },
+                                        '50%': { opacity: 0.5, transform: 'scale(1.05)' },
+                                        '100%': { opacity: 1, transform: 'scale(1)' }
+                                    }
                                 }}
                             >
                                 {name}
                             </Typography>
                             <Typography
                                 sx={{
-                                    fontSize: '1.25rem',
+                                    fontSize: '1.4rem',
                                     color: '#d0d0d0',
-                                    fontWeight: 400
+                                    fontWeight: 400,
+                                    opacity: 0,
+                                    animation: 'fadeIn 0.6s ease forwards',
+                                    [theme.breakpoints.up('lg')]: { fontSize: '1.6rem' },
+                                    '@keyframes fadeIn': {
+                                        '0%': { opacity: 0 },
+                                        '100%': { opacity: 1 }
+                                    }
                                 }}
                             >
                                 ({value})

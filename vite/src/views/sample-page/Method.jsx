@@ -12,7 +12,7 @@ function useJsonStore(fileName) {
     const [items, setItems] = useState([]);
 
     const dirName = 'data';
-    const filePath = `${ dirName }/${ fileName }`;
+    const filePath = `${dirName}/${fileName}`;
 
     // 讀取 JSON
     const load = async () => {
@@ -21,7 +21,7 @@ function useJsonStore(fileName) {
             const jsonData = JSON.parse(content);
             setItems(jsonData || []);
         } catch {
-            console.warn(`⚠ 尚無 ${ fileName } 紀錄`);
+            console.warn(`⚠ 尚無 ${fileName} 紀錄`);
             setItems([]);
         }
     };
@@ -87,7 +87,7 @@ export default function Method() {
                     color: '#333',
                 }}
             >
-                💳支出方式設定管理
+                💳支出方式設定
             </Typography>
         }>
             <Grid container spacing={gridSpacing}>
@@ -138,7 +138,7 @@ export default function Method() {
                                             return showAlert('warning', '請輸入支出方式名稱', '');
                                         }
                                         await methodStore.add(record.company);
-                                        showAlert('success', '儲存成功', `方式 "${ record.company }" 已新增！`);
+                                        showAlert('success', '儲存成功', `方式 "${record.company}" 已新增！`);
                                         setRecord({ company: '' });
                                     }}
                                     sx={{
@@ -195,7 +195,7 @@ export default function Method() {
                                     onClick={async (e) => {
                                         if (!selectedMethod) return;
                                         const result = await Swal.fire({
-                                            title: `確定刪除方式 "${ selectedMethod }"？`,
+                                            title: `確定刪除方式 "${selectedMethod}"？`,
                                             icon: 'warning',
                                             showCancelButton: true,
                                             confirmButtonColor: '#d33',
@@ -206,7 +206,7 @@ export default function Method() {
                                         if (result.isConfirmed) {
                                             await methodStore.remove(selectedMethod);
                                             setselectedMethod('');
-                                            showAlert('success', '刪除成功', `方式"${ selectedMethod }"已移除`);
+                                            showAlert('success', '刪除成功', `方式"${selectedMethod}"已移除`);
                                         }
                                     }}
                                     sx={{

@@ -20,7 +20,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(210.04deg, ${ theme.palette.warning.dark } -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
+        background: `linear-gradient(210.04deg, ${theme.palette.warning.dark} -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
         borderRadius: '50%',
         top: -30,
         right: -180
@@ -30,24 +30,23 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
         position: 'absolute',
         width: 210,
         height: 210,
-        background: `linear-gradient(140.9deg, ${ theme.palette.warning.dark } -14.02%, rgba(144, 202, 249, 0) 70.50%)`,
+        background: `linear-gradient(140.9deg, ${theme.palette.warning.dark} -14.02%, rgba(144, 202, 249, 0) 70.50%)`,
         borderRadius: '50%',
         top: -160,
         right: -130
     }
 }));
 
-export default function TotalIncomeLightCard({ isLoading, topCompany, currentYear }) {
+export default function TotalIncomeLightCard({ isLoading, averageMonIncome, averageMonExpense, currentYear }) {
     const theme = useTheme();
     const [mode, setMode] = React.useState('income'); // 預設顯示收入
 
     // 根據 mode 切換顯示內容
     const labelText = mode === 'income' ? '收入' : '支出';
-    const color = mode === 'income' ? '#55f458ff' : '#fac472ff';
-    const name = mode === 'income' ? (topCompany?.name || '—') : (topExpense?.category || '—');
+    const color = mode === 'income' ? '#2ec930ff' : '#e9a846ff';
     const value = mode === 'income'
-        ? `${ topCompany?.count?.toLocaleString?.() || 0 } 次`
-        : `$${ topExpense?.total?.toLocaleString?.() || 0 }`;
+        ? `$${averageMonIncome.toLocaleString?.() || 0}`
+        : `$${averageMonExpense.toLocaleString?.() || 0}`;
 
     return (
         <>
@@ -85,7 +84,7 @@ export default function TotalIncomeLightCard({ isLoading, topCompany, currentYea
                                         color: '#100f0fff'
                                     }}
                                 >
-                                    今年 ({currentYear}年)收入最高公司
+                                    今年 ({currentYear}年)平均月{labelText}
                                 </Typography>
                             </Box>
 
@@ -134,8 +133,8 @@ export default function TotalIncomeLightCard({ isLoading, topCompany, currentYea
                                 },
                                 display: 'flex',           // ✅ 同一行排列
                                 alignItems: 'baseline',    // ✅ 對齊底線（讓字漂亮對齊）
-                                gap: 1,                     // ✅ 兩者間距
-                                mt: 0,
+                                gap: 2,                     // ✅ 兩者間距
+                                mt: 0.5,
                                 ml: 4
                             }}
                         >
@@ -143,18 +142,33 @@ export default function TotalIncomeLightCard({ isLoading, topCompany, currentYea
                                 sx={{
                                     fontSize: '1.8rem',
                                     fontWeight: 600,
-                                    color: '#ae00ffff'
+                                    color,
+                                    opacity: 0,
+                                    transform: 'scale(0.9)',
+                                    animation: 'fadeInScale 0.6s ease forwards', // 👈 呼叫動畫
+                                    [theme.breakpoints.up('lg')]: { fontSize: '2.2rem' },
+                                    '@keyframes fadeInScale': {
+                                        '0%': { opacity: 0, transform: 'scale(0.9)' },
+                                        '50%': { opacity: 0.5, transform: 'scale(1.05)' },
+                                        '100%': { opacity: 1, transform: 'scale(1)' }
+                                    }
                                 }}
                             >
-                                {name}
+                                平均每月:
                             </Typography>
                             <Typography
                                 component="span"
                                 sx={{
-                                    fontSize: '1.25rem',
-                                    color: '#443b3bff',
+                                    fontSize: '1.4rem',
+                                    color: '#737272ff',
                                     fontWeight: 400,
-                                    ml: 1
+                                    opacity: 0,
+                                    animation: 'fadeIn 0.6s ease forwards',
+                                    [theme.breakpoints.up('lg')]: { fontSize: '1.6rem' },
+                                    '@keyframes fadeIn': {
+                                        '0%': { opacity: 0 },
+                                        '100%': { opacity: 1 }
+                                    }
                                 }}
                             >
                                 ({value})
