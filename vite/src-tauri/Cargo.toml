@@ -34,3 +34,4 @@ reqwest = { version = "0.12", features = ["json"] }
 
 # Tauri + reqwest 一定要 async runtime
 tokio = { version = "1.48.0", features = ["rt-multi-thread", "macros"] }
+dotenvy = "0.15.7"

@@ -2,13 +2,18 @@ use reqwest::Client;
 use serde_json::{json, Value};
 use tauri::{command, Builder};
 use tauri_plugin_fs;
+use dotenvy::dotenv; // ⬅️ 加這行
+use std::env;
 
 // -----------------------------
 //  ChatGPT API 呼叫 (free.v36.cm)
 // -----------------------------
 #[command]
 async fn call_chatgpt(prompt: String) -> Result<String, String> {
-    let api_key = "sk-U7R7DD8l4EYNY2E6D3A8A4B81a1842D89830Fb06D8F08fDf";  // ← 這邊改成你申請到的 key
+    dotenv().ok(); // ⬅️ 讀取 .env
+    
+    let api_key = env::var("V36_API_KEY")
+        .map_err(|_| "❌ 找不到環境變數 V36_API_KEY".to_string())?;
 
     let url = "https://free.v36.cm/v1/chat/completions";
 
@@ -37,9 +42,6 @@ async fn call_chatgpt(prompt: String) -> Result<String, String> {
     Ok(json_resp.to_string())
 }
 
-// -----------------------------
-//  app run (main)
-// -----------------------------
 pub fn run() {
     Builder::default()
         .plugin(tauri_plugin_fs::init())
